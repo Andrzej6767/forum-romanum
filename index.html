@@ -1,88 +1,106 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Strona Główna</title>
-<style>
-    body {
-        font-family: 'Georgia', serif;
-        background-color: #f4e1c1;
-        background-image: url('https://www.transparenttextures.com/patterns/papyrus.png');
-        color: #4b2e1e;
-        margin: 0;
-        padding: 0;
-        text-align: center;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    header {
-        background-color: #d4b483;
-        padding: 20px;
-        border-bottom: 5px solid #8b5e3c;
-    }
+    <title>Forum Romanum</title>
 
-    header h1 {
-        font-size: 2.5em;
-        margin: 0;
-        font-family: 'Times New Roman', serif;
-        letter-spacing: 2px;
-    }
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 
-    nav {
-        margin-top: 15px;
-    }
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
 
-    nav a {
-        display: inline-block;
-        margin: 0 15px;
-        padding: 10px 20px;
-        background-color: #e6c89f;
-        border: 2px solid #8b5e3c;
-        border-radius: 5px;
-        text-decoration: none;
-        color: #4b2e1e;
-        font-weight: bold;
-        transition: 0.3s;
-    }
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
 
-    nav a:hover {
-        background-color: #d4b483;
-        transform: scale(1.05);
-    }
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            color: white;
 
-    main {
-        padding: 30px;
-        max-width: 800px;
-        margin: auto;
-    }
+            /* TAPETA */
+            background-image: url("rome1.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
 
-    footer {
-        background-color: #d4b483;
-        padding: 10px;
-        border-top: 5px solid #8b5e3c;
-        margin-top: 40px;
-    }
-</style>
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 10px;
+            width: 220px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #8b0000;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #a00000;
+        }
+
+        /* RESPONSYWNOŚĆ TELEFON */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            h2 {
+                font-size: 1.1rem;
+            }
+
+            input {
+                width: 180px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<header>
-    <h1>Witamy w Antycznym Królestwie</h1>
-    <nav>
-        <a href="galeria.html">📜 Galeria Zdjęć</a>
-        <a href="forum.html">🏛 Forum</a>
-        <a href="kalendarz.html">📅 Kalendarz</a>
-    </nav>
-</header>
+    <h1>Forum Romanum</h1>
 
-<main>
-    <h2>O stronie</h2>
-    <p>Witaj podróżniku! Ta strona przeniesie Cię w czasy starożytnych cywilizacji.  
-    Wybierz jedną z zakładek powyżej, aby odkryć nasze skarby.</p>
-</main>
+    <h2>Podaj hasło, aby wejść</h2>
 
-<footer>
-    &copy; 2026 Antyczne Królestwo
-</footer>
+    <input type="password" id="password" placeholder="Wpisz hasło">
+
+    <button onclick="checkPassword()">Wejdź</button>
+
+    <script>
+        function checkPassword() {
+            const password = document.getElementById("password").value;
+
+            if (password === "Tusk123") {
+                window.location.href = "index.html";
+            } else {
+                alert("Błędne hasło!");
+            }
+        }
+    </script>
 
 </body>
 </html>
