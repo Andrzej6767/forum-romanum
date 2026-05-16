@@ -7,17 +7,21 @@
     <title>Forum Romanum</title>
 
     <style>
+
         body {
             margin: 0;
             height: 100vh;
+
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
 
             font-family: Georgia, serif;
+
             background-color: #f4e1c1;
             background-image: url('https://www.transparenttextures.com/patterns/papyrus.png');
+
             color: #4b2e1e;
             text-align: center;
         }
@@ -30,23 +34,41 @@
         p {
             font-size: 1.2rem;
             max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         a {
-            margin-top: 20px;
             display: inline-block;
-            padding: 12px 20px;
+
+            padding: 14px 24px;
+
             background-color: #d4b483;
+
             border: 2px solid #8b5e3c;
+
             border-radius: 8px;
+
             text-decoration: none;
+
             color: #4b2e1e;
+
             font-weight: bold;
+
+            transition: 0.3s;
         }
 
         a:hover {
             background-color: #caa26f;
+            transform: scale(1.05);
         }
+
     </style>
 </head>
 
@@ -56,10 +78,20 @@
 
     <p>
         Witaj w Imperium Romka.  
-        Przejdź do forum, aby rozmawiać z innymi wielbicielami.
+        Przejdź do forum lub sprawdź kalendarz Imperium.
     </p>
 
-    <a href="forum.html">Wejdź do Forum</a>
+    <div class="buttons">
+
+        <a href="forum.html">
+            🏛 Forum
+        </a>
+
+        <a href="kalendarz.html">
+            📅 Kalendarz
+        </a>
+
+    </div>
 
 </body>
 </html>
