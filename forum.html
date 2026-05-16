@@ -17,8 +17,6 @@ body {
     color: #4b2e1e;
 }
 
-/* GÓRA */
-
 header {
     background-color: #d4b483;
     padding: 20px;
@@ -31,15 +29,11 @@ header h1 {
     font-size: 2.5rem;
 }
 
-/* CHAT */
-
 #chat {
     height: 70vh;
     overflow-y: auto;
     padding: 20px;
 }
-
-/* WIADOMOŚĆ */
 
 .message {
     background-color: #e6c89f;
@@ -50,22 +44,15 @@ header h1 {
     word-wrap: break-word;
 }
 
-/* NICK */
-
 .nickname {
     font-weight: bold;
-    font-size: 1rem;
 }
-
-/* GODZINA */
 
 .time {
     color: #555;
     font-size: 0.8rem;
     margin-left: 8px;
 }
-
-/* DÓŁ */
 
 .input-area {
     position: fixed;
@@ -99,8 +86,6 @@ button {
 button:hover {
     background-color: #6f472d;
 }
-
-/* TELEFON */
 
 @media (max-width: 600px) {
 
@@ -151,8 +136,6 @@ import {
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* FIREBASE */
-
 const firebaseConfig = {
 
   apiKey: "AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
@@ -172,8 +155,6 @@ const firebaseConfig = {
   measurementId: "G-RL52CHCF0N"
 };
 
-/* START */
-
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app);
@@ -191,13 +172,9 @@ window.sendMessage = function() {
 
     if(text.trim() !== "") {
 
-        /* NICK */
-
         const nickname =
         localStorage.getItem("nickname")
         || "Anonim";
-
-        /* GODZINA */
 
         const now = new Date();
 
@@ -205,8 +182,6 @@ window.sendMessage = function() {
         now.getHours().toString().padStart(2, '0')
         + ":" +
         now.getMinutes().toString().padStart(2, '0');
-
-        /* WYSŁANIE */
 
         push(chatRef, {
 
@@ -238,11 +213,11 @@ onChildAdded(chatRef, (data) => {
     div.innerHTML = `
 
         <span class="nickname">
-            ${message.nickname}
+            ${message.nickname || "Anonim"}
         </span>
 
         <span class="time">
-            [${message.time}]
+            [${message.time || "--:--"}]
         </span>
 
         <br><br>
