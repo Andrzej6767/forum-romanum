@@ -17,6 +17,8 @@ body {
     color: #4b2e1e;
 }
 
+/* HEADER */
+
 header {
     background-color: #d4b483;
     padding: 20px;
@@ -29,11 +31,24 @@ header h1 {
     font-size: 2.5rem;
 }
 
+/* TYPING */
+
+#typing {
+    padding: 10px;
+    font-style: italic;
+    color: #6f472d;
+    height: 20px;
+}
+
+/* CHAT */
+
 #chat {
-    height: 70vh;
+    height: 65vh;
     overflow-y: auto;
     padding: 20px;
 }
+
+/* MESSAGE */
 
 .message {
     background-color: #e6c89f;
@@ -44,15 +59,7 @@ header h1 {
     word-wrap: break-word;
 }
 
-.nickname {
-    font-weight: bold;
-}
-
-.time {
-    color: #555;
-    font-size: 0.8rem;
-    margin-left: 8px;
-}
+/* INPUT */
 
 .input-area {
     position: fixed;
@@ -107,74 +114,52 @@ button:hover {
     <h1>🏛 Forum Romanum</h1>
 </header>
 
+<div id="typing"></div>
+
 <div id="chat"></div>
 
 <div class="input-area">
 
-    <input
-        type="text"
-        id="messageInput"
-        placeholder="Napisz wiadomość..."
-    >
+    <input type="text" id="messageInput" placeholder="Napisz wiadomość...">
 
-    <button onclick="sendMessage()">
-        Wyślij
-    </button>
+    <button onclick="sendMessage()">Wyślij</button>
 
 </div>
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-import {
-    getDatabase,
-    ref,
-    push,
-    onChildAdded
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+/* FIREBASE */
 
 const firebaseConfig = {
 
   apiKey: "AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
-
   authDomain: "dupa-a6aa0.firebaseapp.com",
-
   databaseURL: "https://dupa-a6aa0-default-rtdb.firebaseio.com",
-
   projectId: "dupa-a6aa0",
-
   storageBucket: "dupa-a6aa0.firebasestorage.app",
-
   messagingSenderId: "782529996845",
+  appId: "1:782529996845:web:277ff4fcf6f4db846cf0a4"
 
-  appId: "1:782529996845:web:277ff4fcf6f4db846cf0a4",
-
-  measurementId: "G-RL52CHCF0N"
 };
 
 const app = initializeApp(firebaseConfig);
-
 const db = getDatabase(app);
-
 const chatRef = ref(db, "messages");
 
-/* WYSYŁANIE */
+/* SEND */
 
 window.sendMessage = function() {
 
-    const input =
-    document.getElementById("messageInput");
-
+    const input = document.getElementById("messageInput");
     const text = input.value;
 
     if(text.trim() !== "") {
 
         const nickname =
-        localStorage.getItem("nickname")
-        || "Anonim";
+        localStorage.getItem("nickname") || "Anonim";
 
         const now = new Date();
 
@@ -183,41 +168,47 @@ window.sendMessage = function() {
         + ":" +
         now.getMinutes().toString().padStart(2, '0');
 
+        const colors = [
+            "#8b0000",
+            "#4b2e1e",
+            "#2e86c1",
+            "#27ae60",
+            "#9b59b6",
+            "#d35400"
+        ];
+
+        const color =
+        colors[Math.floor(Math.random() * colors.length)];
+
         push(chatRef, {
-
-            nickname: nickname,
-
-            text: text,
-
-            time: time
+            nickname,
+            text,
+            time,
+            color
         });
 
         input.value = "";
     }
 };
 
-/* ODBIERANIE */
+/* RECEIVE */
 
 onChildAdded(chatRef, (data) => {
 
-    const chat =
-    document.getElementById("chat");
-
-    const div =
-    document.createElement("div");
-
+    const chat = document.getElementById("chat");
+    const div = document.createElement("div");
     div.classList.add("message");
 
     const message = data.val();
 
     div.innerHTML = `
 
-        <span class="nickname">
-            ${message.nickname || "Anonim"}
+        <span style="color:${message.color}; font-weight:bold;">
+            ${message.nickname}
         </span>
 
-        <span class="time">
-            [${message.time || "--:--"}]
+        <span style="font-size:12px; color:#555;">
+            [${message.time}]
         </span>
 
         <br><br>
@@ -227,8 +218,27 @@ onChildAdded(chatRef, (data) => {
     `;
 
     chat.appendChild(div);
-
     chat.scrollTop = chat.scrollHeight;
+});
+
+/* TYPING */
+
+const typing = document.getElementById("typing");
+
+let typingTimeout;
+
+document.getElementById("messageInput").addEventListener("input", () => {
+
+    const nickname =
+    localStorage.getItem("nickname") || "Anonim";
+
+    typing.innerText = nickname + " pisze...";
+
+    clearTimeout(typingTimeout);
+
+    typingTimeout = setTimeout(() => {
+        typing.innerText = "";
+    }, 1500);
 });
 
 </script>
