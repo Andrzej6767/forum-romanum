@@ -9,7 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
+
         body {
+
             margin: 0;
             height: 100vh;
 
@@ -19,52 +21,79 @@
             align-items: center;
 
             font-family: 'Cinzel', serif;
+
             text-align: center;
+
             color: white;
 
             /* TAPETA */
+
             background-image: url("rome1.jpg");
+
             background-size: cover;
+
             background-position: center;
+
             background-repeat: no-repeat;
+
             background-attachment: fixed;
         }
 
         h1 {
+
             font-size: 4rem;
+
             margin-bottom: 10px;
         }
 
         h2 {
+
             font-size: 1.5rem;
+
             margin-bottom: 20px;
         }
 
         input {
+
             padding: 10px;
+
             font-size: 1rem;
+
             border-radius: 8px;
+
             border: none;
+
             margin-bottom: 10px;
+
             width: 220px;
         }
 
         button {
+
             padding: 10px 20px;
+
             font-size: 1rem;
+
             border: none;
+
             border-radius: 8px;
+
             cursor: pointer;
+
             background-color: #8b0000;
+
             color: white;
         }
 
         button:hover {
+
             background-color: #a00000;
         }
 
-        /* RESPONSYWNOŚĆ TELEFON */
+        /* TELEFON */
+
         @media (max-width: 600px) {
+
             h1 {
                 font-size: 2.5rem;
             }
@@ -77,6 +106,7 @@
                 width: 180px;
             }
         }
+
     </style>
 </head>
 
@@ -84,22 +114,58 @@
 
     <h1>Forum Romanum</h1>
 
-    <h2>Podaj hasło, aby wejść</h2>
+    <h2>Podaj dane, aby wejść</h2>
 
-    <input type="password" id="password" placeholder="Wpisz hasło">
+    <!-- NICK -->
 
-    <button onclick="checkPassword()">Wejdź</button>
+    <input
+        type="text"
+        id="nickname"
+        placeholder="Wpisz nickname"
+    >
+
+    <!-- HASŁO -->
+
+    <input
+        type="password"
+        id="password"
+        placeholder="Wpisz hasło"
+    >
+
+    <button onclick="checkPassword()">
+        Wejdź
+    </button>
 
     <script>
+
         function checkPassword() {
-            const password = document.getElementById("password").value;
+
+            const password =
+            document.getElementById("password").value;
+
+            const nickname =
+            document.getElementById("nickname").value;
 
             if (password === "Tusk123") {
-                window.location.href = "Login.html";
+
+                /* ZAPIS NICKU */
+
+                localStorage.setItem(
+                    "nickname",
+                    nickname
+                );
+
+                /* PRZEJŚCIE */
+
+                window.location.href =
+                "Login.html";
+
             } else {
+
                 alert("Błędne hasło!");
             }
         }
+
     </script>
 
 </body>
