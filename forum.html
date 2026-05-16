@@ -50,6 +50,21 @@ header h1 {
     word-wrap: break-word;
 }
 
+/* NICK */
+
+.nickname {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+/* GODZINA */
+
+.time {
+    color: #555;
+    font-size: 0.8rem;
+    margin-left: 8px;
+}
+
 /* DÓŁ */
 
 .input-area {
@@ -169,14 +184,37 @@ const chatRef = ref(db, "messages");
 
 window.sendMessage = function() {
 
-    const input = document.getElementById("messageInput");
+    const input =
+    document.getElementById("messageInput");
 
     const text = input.value;
 
     if(text.trim() !== "") {
 
+        /* NICK */
+
+        const nickname =
+        localStorage.getItem("nickname")
+        || "Anonim";
+
+        /* GODZINA */
+
+        const now = new Date();
+
+        const time =
+        now.getHours().toString().padStart(2, '0')
+        + ":" +
+        now.getMinutes().toString().padStart(2, '0');
+
+        /* WYSŁANIE */
+
         push(chatRef, {
-            text: text
+
+            nickname: nickname,
+
+            text: text,
+
+            time: time
         });
 
         input.value = "";
@@ -187,13 +225,31 @@ window.sendMessage = function() {
 
 onChildAdded(chatRef, (data) => {
 
-    const chat = document.getElementById("chat");
+    const chat =
+    document.getElementById("chat");
 
-    const div = document.createElement("div");
+    const div =
+    document.createElement("div");
 
     div.classList.add("message");
 
-    div.textContent = data.val().text;
+    const message = data.val();
+
+    div.innerHTML = `
+
+        <span class="nickname">
+            ${message.nickname}
+        </span>
+
+        <span class="time">
+            [${message.time}]
+        </span>
+
+        <br><br>
+
+        ${message.text}
+
+    `;
 
     chat.appendChild(div);
 
