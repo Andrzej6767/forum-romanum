@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -27,6 +26,14 @@ header {
 header h1 {
     margin: 0;
     font-size: 2.5rem;
+}
+
+.back {
+    display: inline-block;
+    margin: 20px;
+    text-decoration: none;
+    color: #4b2e1e;
+    font-weight: bold;
 }
 
 #postForm {
@@ -105,14 +112,6 @@ button:hover {
     margin-right: 10px;
 }
 
-.back {
-    display: inline-block;
-    margin: 20px;
-    text-decoration: none;
-    color: #4b2e1e;
-    font-weight: bold;
-}
-
 </style>
 </head>
 
@@ -122,7 +121,9 @@ button:hover {
     <h1>🏺 Media Romanum</h1>
 </header>
 
-<a class="back" href="Login.html">⬅ Powrót</a>
+<a class="back" href="Login.html">
+    ⬅ Powrót
+</a>
 
 <div id="postForm">
 
@@ -160,20 +161,32 @@ import {
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+/* FIREBASE */
+
 const firebaseConfig = {
 
   apiKey: "AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
+
   authDomain: "dupa-a6aa0.firebaseapp.com",
+
   databaseURL: "https://dupa-a6aa0-default-rtdb.firebaseio.com",
+
   projectId: "dupa-a6aa0",
+
   storageBucket: "dupa-a6aa0.firebasestorage.app",
+
   messagingSenderId: "782529996845",
+
   appId: "1:782529996845:web:277ff4fcf6f4db846cf0a4"
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
+
 const postsRef = ref(db, "posts");
+
+/* DODAWANIE POSTA */
 
 window.addPost = function() {
 
@@ -191,10 +204,10 @@ window.addPost = function() {
     const now = new Date();
 
     const date =
-    now.toLocaleDateString("pl-PL") +
-    " " +
-    now.getHours().toString().padStart(2, '0') +
-    ":" +
+    now.toLocaleDateString("pl-PL")
+    + " " +
+    now.getHours().toString().padStart(2, '0')
+    + ":" +
     now.getMinutes().toString().padStart(2, '0');
 
     push(postsRef, {
@@ -205,33 +218,46 @@ window.addPost = function() {
         date,
 
         likes: 0,
-        dislikes: 0
+        dislikes: 0,
+
+        voters: {}
     });
 
     document.getElementById("postText").value = "";
     document.getElementById("imageUrl").value = "";
 };
 
+/* WYŚWIETLANIE POSTÓW */
+
 onChildAdded(postsRef, (data) => {
 
     const post = data.val();
 
-    const div = document.createElement("div");
+    const div =
+    document.createElement("div");
 
     div.classList.add("post");
 
     div.innerHTML = `
 
         <div class="meta">
-            <strong>${post.nickname}</strong>
+
+            <strong>
+                ${post.nickname}
+            </strong>
+
             • ${post.date}
+
         </div>
 
         <div>
             ${post.text}
         </div>
 
-        ${post.image ? `<img src="${post.image}">` : ""}
+        ${post.image
+            ? `<img src="${post.image}">`
+            : ""
+        }
 
         <div class="reactions">
 
@@ -247,61 +273,50 @@ onChildAdded(postsRef, (data) => {
 
     `;
 
-    document.getElementById("posts").prepend(div);
+    document
+    .getElementById("posts")
+    .prepend(div);
 });
+
+/* REAKCJE */
 
 window.react = function(id, type) {
 
     const nickname =
     localStorage.getItem("nickname") || "Anonim";
 
-    const postRef = ref(db, "posts/" + id);
+    const postRef =
+    ref(db, "posts/" + id);
 
     get(postRef).then((snap) => {
 
         const data = snap.val();
 
-        /* lista głosów */
-
         if (!data.voters) {
             data.voters = {};
         }
 
-        /* czy już głosował */
+        /* SPRAWDZANIE */
 
         if (data.voters[nickname]) {
 
-            alert("Już głosowałeś na ten post!");
+            alert(
+                "Już głosowałeś na ten post!"
+            );
 
             return;
         }
 
-        /* dodanie głosu */
+        /* UPDATE */
 
         const updateData = {};
 
         updateData[type] =
         (data[type] || 0) + 1;
 
-        /* zapis kto głosował */
-
-        updateData["voters/" + nickname] = true;
-
-        update(postRef, updateData);
-
-        location.reload();
-    });
-};
-
-    const postRef = ref(db, "posts/" + id);
-
-    get(postRef).then((snap) => {
-
-        const data = snap.val();
-
-        const updateData = {};
-
-        updateData[type] = (data[type] || 0) + 1;
+        updateData[
+            "voters/" + nickname
+        ] = true;
 
         update(postRef, updateData);
 
@@ -313,4 +328,3 @@ window.react = function(id, type) {
 
 </body>
 </html>
-
