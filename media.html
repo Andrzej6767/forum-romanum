@@ -252,6 +252,47 @@ onChildAdded(postsRef, (data) => {
 
 window.react = function(id, type) {
 
+    const nickname =
+    localStorage.getItem("nickname") || "Anonim";
+
+    const postRef = ref(db, "posts/" + id);
+
+    get(postRef).then((snap) => {
+
+        const data = snap.val();
+
+        /* lista głosów */
+
+        if (!data.voters) {
+            data.voters = {};
+        }
+
+        /* czy już głosował */
+
+        if (data.voters[nickname]) {
+
+            alert("Już głosowałeś na ten post!");
+
+            return;
+        }
+
+        /* dodanie głosu */
+
+        const updateData = {};
+
+        updateData[type] =
+        (data[type] || 0) + 1;
+
+        /* zapis kto głosował */
+
+        updateData["voters/" + nickname] = true;
+
+        update(postRef, updateData);
+
+        location.reload();
+    });
+};
+
     const postRef = ref(db, "posts/" + id);
 
     get(postRef).then((snap) => {
