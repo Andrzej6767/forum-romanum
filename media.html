@@ -1,4 +1,199 @@
+
 <!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Media Romanum</title>
+
+<style>
+
+body {
+    margin: 0;
+    font-family: Georgia, serif;
+    background-color: #f4e1c1;
+    background-image: url('https://www.transparenttextures.com/patterns/papyrus.png');
+    color: #4b2e1e;
+}
+
+header {
+    background-color: #d4b483;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 5px solid #8b5e3c;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+#postForm {
+    max-width: 700px;
+    margin: 20px auto;
+    background: #e6c89f;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+textarea {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    resize: none;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+button {
+    margin-top: 10px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #8b5e3c;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #6f472d;
+}
+
+#posts {
+    max-width: 700px;
+    margin: auto;
+    padding: 20px;
+}
+
+.post {
+    background: #e6c89f;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border-left: 5px solid #8b5e3c;
+}
+
+.post img {
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+.meta {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.reactions {
+    margin-top: 10px;
+}
+
+.reactions button {
+    margin-right: 10px;
+}
+
+.back {
+    display: inline-block;
+    margin: 20px;
+    text-decoration: none;
+    color: #4b2e1e;
+    font-weight: bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🏺 Media Romanum</h1>
+</header>
+
+<a class="back" href="Login.html">⬅ Powrót</a>
+
+<div id="postForm">
+
+    <textarea
+        id="postText"
+        placeholder="Napisz post..."
+    ></textarea>
+
+    <input
+        type="text"
+        id="imageUrl"
+        placeholder="Wklej link do zdjęcia (opcjonalnie)"
+    >
+
+    <button onclick="addPost()">
+        Dodaj post
+    </button>
+
+</div>
+
+<div id="posts"></div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getDatabase,
+    ref,
+    push,
+    onChildAdded,
+    update,
+    get
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
+  authDomain: "dupa-a6aa0.firebaseapp.com",
+  databaseURL: "https://dupa-a6aa0-default-rtdb.firebaseio.com",
+  projectId: "dupa-a6aa0",
+  storageBucket: "dupa-a6aa0.firebasestorage.app",
+  messagingSenderId: "782529996845",
+  appId: "1:782529996845:web:277ff4fcf6f4db846cf0a4"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const postsRef = ref(db, "posts");
+
+window.addPost = function() {
+
+    const text =
+    document.getElementById("postText").value;
+
+    const image =
+    document.getElementById("imageUrl").value;
+
+    if(text.trim() === "") return;
+
+    const nickname =
+    localStorage.getItem("nickname") || "Anonim";
+
+    const now = new Date();
+
+    const date =
+    now.toLocaleDateString("pl-PL") +
+    " " +
+    now.getHours().toString().padStart(2, '0') +
     ":" +
     now.getMinutes().toString().padStart(2, '0');
 
@@ -77,3 +272,37 @@ window.react = function(id, type) {
 
 </body>
 </html>
+```
+
+---
+
+# Jak dodawać zdjęcia?
+
+Na razie najprościej:
+
+1. wrzuć zdjęcie np. na:
+
+* Imgur
+* Discord
+* GitHub
+
+2. skopiuj bezpośredni link do obrazka
+
+3. wklej do pola:
+
+```text
+Wklej link do zdjęcia
+```
+
+---
+
+# Co już będzie działać
+
+* posty tekstowe
+* zdjęcia
+* nickname autora
+* data posta
+* 👍 łapki w górę
+* 👎 łapki w dół
+* wszystko online przez Firebase
+* działa na telefonach
