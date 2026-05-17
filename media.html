@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -148,8 +149,7 @@ button:hover {
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
     getDatabase,
@@ -158,8 +158,7 @@ import {
     onChildAdded,
     update,
     get
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* FIREBASE */
 
@@ -212,10 +211,10 @@ window.addPost = function() {
 
     push(postsRef, {
 
-        nickname,
-        text,
-        image,
-        date,
+        nickname: nickname,
+        text: text,
+        image: image,
+        date: date,
 
         likes: 0,
         dislikes: 0,
@@ -227,7 +226,7 @@ window.addPost = function() {
     document.getElementById("imageUrl").value = "";
 };
 
-/* WYŚWIETLANIE POSTÓW */
+/* WYŚWIETLANIE */
 
 onChildAdded(postsRef, (data) => {
 
@@ -296,18 +295,12 @@ window.react = function(id, type) {
             data.voters = {};
         }
 
-        /* SPRAWDZANIE */
-
         if (data.voters[nickname]) {
 
-            alert(
-                "Już głosowałeś na ten post!"
-            );
+            alert("Już głosowałeś!");
 
             return;
         }
-
-        /* UPDATE */
 
         const updateData = {};
 
@@ -319,8 +312,6 @@ window.react = function(id, type) {
         ] = true;
 
         update(postRef, updateData);
-
-        location.reload();
     });
 };
 
