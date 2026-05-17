@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+    ":" +
+    now.getMinutes().toString().padStart(2, '0');
+
+    push(postsRef, {
+
+        nickname,
+        text,
+        image,
+        date,
+
+        likes: 0,
+        dislikes: 0
+    });
+
+    document.getElementById("postText").value = "";
+    document.getElementById("imageUrl").value = "";
+};
+
+onChildAdded(postsRef, (data) => {
+
+    const post = data.val();
+
+    const div = document.createElement("div");
+
+    div.classList.add("post");
+
+    div.innerHTML = `
+
+        <div class="meta">
+            <strong>${post.nickname}</strong>
+            • ${post.date}
+        </div>
+
+        <div>
+            ${post.text}
+        </div>
+
+        ${post.image ? `<img src="${post.image}">` : ""}
+
+        <div class="reactions">
+
+            <button onclick="react('${data.key}','likes')">
+                👍 ${post.likes || 0}
+            </button>
+
+            <button onclick="react('${data.key}','dislikes')">
+                👎 ${post.dislikes || 0}
+            </button>
+
+        </div>
+
+    `;
+
+    document.getElementById("posts").prepend(div);
+});
+
+window.react = function(id, type) {
+
+    const postRef = ref(db, "posts/" + id);
+
+    get(postRef).then((snap) => {
+
+        const data = snap.val();
+
+        const updateData = {};
+
+        updateData[type] = (data[type] || 0) + 1;
+
+        update(postRef, updateData);
+
+        location.reload();
+    });
+};
+
+</script>
+
+</body>
+</html>
