@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -17,11 +16,21 @@ body {
     color: #4b2e1e;
 }
 
+/* 🌙 DARK MODE */
+body.dark {
+    background-color: #1e1e1e;
+    color: white;
+}
+
 header {
     background-color: #d4b483;
     padding: 20px;
     text-align: center;
     border-bottom: 5px solid #8b5e3c;
+}
+
+body.dark header {
+    background: #333;
 }
 
 header h1 {
@@ -37,24 +46,18 @@ header h1 {
     border-radius: 10px;
 }
 
-textarea {
-    width: 100%;
-    height: 100px;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    resize: none;
-    box-sizing: border-box;
-    font-size: 16px;
+body.dark #postForm {
+    background: #333;
 }
 
-input[type="text"] {
+textarea, input[type="text"] {
     width: 100%;
     padding: 10px;
-    margin-top: 10px;
     border: none;
     border-radius: 8px;
     box-sizing: border-box;
+    font-size: 16px;
+    margin-top: 10px;
 }
 
 button {
@@ -84,6 +87,11 @@ button:hover {
     border-radius: 10px;
     margin-bottom: 20px;
     border-left: 5px solid #8b5e3c;
+    transition: 0.2s;
+}
+
+body.dark .post {
+    background: #333;
 }
 
 .post img {
@@ -99,10 +107,6 @@ button:hover {
 
 .reactions {
     margin-top: 10px;
-}
-
-.reactions button {
-    margin-right: 10px;
 }
 
 .back {
@@ -126,20 +130,11 @@ button:hover {
 
 <div id="postForm">
 
-    <textarea
-        id="postText"
-        placeholder="Napisz post..."
-    ></textarea>
+    <textarea id="postText" placeholder="Napisz post..."></textarea>
 
-    <input
-        type="text"
-        id="imageUrl"
-        placeholder="Wklej link do zdjęcia (opcjonalnie)"
-    >
+    <input type="text" id="imageUrl" placeholder="Link do zdjęcia (opcjonalnie)">
 
-    <button onclick="addPost()">
-        Dodaj post
-    </button>
+    <button onclick="addPost()">Dodaj post</button>
 
 </div>
 
@@ -147,9 +142,7 @@ button:hover {
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
     getDatabase,
     ref,
@@ -157,8 +150,7 @@ import {
     onChildAdded,
     update,
     get
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
 
@@ -175,61 +167,67 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const postsRef = ref(db, "posts");
 
+/* 🌙 DARK MODE */
+if (localStorage.getItem("dark") === "true") {
+    document.body.classList.add("dark");
+}
+
+/* ➕ DODAWANIE POSTA */
 window.addPost = function() {
 
-    const text =
-    document.getElementById("postText").value;
-
-    const image =
-    document.getElementById("imageUrl").value;
+    const text = document.getElementById("postText").value;
+    const image = document.getElementById("imageUrl").value;
 
     if(text.trim() === "") return;
 
     const nickname =
     localStorage.getItem("nickname") || "Anonim";
 
+    const color =
+    localStorage.getItem("nickColor") || "#4b2e1e";
+
     const now = new Date();
 
     const date =
     now.toLocaleDateString("pl-PL") +
     " " +
-    now.getHours().toString().padStart(2, '0') +
+    now.getHours().toString().padStart(2,'0') +
     ":" +
-    now.getMinutes().toString().padStart(2, '0');
+    now.getMinutes().toString().padStart(2,'0');
 
     push(postsRef, {
-
         nickname,
+        color,
         text,
         image,
         date,
-
         likes: 0,
-        dislikes: 0
+        dislikes: 0,
+        voters: {}
     });
 
     document.getElementById("postText").value = "";
     document.getElementById("imageUrl").value = "";
 };
 
+/* 📥 WYŚWIETLANIE */
 onChildAdded(postsRef, (data) => {
 
     const post = data.val();
 
     const div = document.createElement("div");
-
     div.classList.add("post");
 
     div.innerHTML = `
 
         <div class="meta">
-            <strong>${post.nickname}</strong>
+            <strong style="color:${post.color}">
+                ${post.nickname}
+            </strong>
             • ${post.date}
         </div>
 
-        <div>
-            ${post.text}
-        </div>
+        <div>${post.text}</div>
 
         ${post.image ? `<img src="${post.image}">` : ""}
 
@@ -250,6 +248,7 @@ onChildAdded(postsRef, (data) => {
     document.getElementById("posts").prepend(div);
 });
 
+/* 👍👎 REAKCJE (POPRAWIONE - bez reload!) */
 window.react = function(id, type) {
 
     const postRef = ref(db, "posts/" + id);
@@ -258,13 +257,10 @@ window.react = function(id, type) {
 
         const data = snap.val();
 
-        const updateData = {};
+        update(postRef, {
+            [type]: (data[type] || 0) + 1
+        });
 
-        updateData[type] = (data[type] || 0) + 1;
-
-        update(postRef, updateData);
-
-        location.reload();
     });
 };
 
@@ -272,4 +268,3 @@ window.react = function(id, type) {
 
 </body>
 </html>
-
