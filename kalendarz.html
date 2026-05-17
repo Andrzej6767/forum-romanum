@@ -12,26 +12,25 @@
 body {
 
     margin: 0;
-
     height: 100vh;
 
     display: flex;
-
     justify-content: center;
-
     align-items: center;
-
     flex-direction: column;
 
     text-align: center;
-
     font-family: Georgia, serif;
 
     background-color: #f4e1c1;
-
     background-image: url('https://www.transparenttextures.com/patterns/papyrus.png');
-
     color: #4b2e1e;
+}
+
+/* 🌙 DARK MODE */
+body.dark {
+    background-color: #1e1e1e;
+    color: white;
 }
 
 h1 {
@@ -46,34 +45,34 @@ h1 {
 #quote {
 
     margin-top: 30px;
-
     max-width: 700px;
 
     font-size: 1.3rem;
-
     font-style: italic;
 
     padding: 20px;
 
     background-color: rgba(255,255,255,0.4);
-
     border-radius: 10px;
 }
+
+body.dark #quote {
+    background-color: rgba(0,0,0,0.4);
+}
+
+/* BUTTON */
 
 a {
 
     margin-top: 40px;
-
     padding: 12px 20px;
 
     background-color: #d4b483;
-
     border: 2px solid #8b5e3c;
 
     border-radius: 8px;
 
     text-decoration: none;
-
     color: #4b2e1e;
 
     font-weight: bold;
@@ -94,13 +93,19 @@ a:hover {
 
 <div id="quote"></div>
 
-<a href="index.html">
+<a href="Login.html">
     ⬅ Powrót
 </a>
 
 <script>
 
-/* DATA */
+/* 🌙 DARK MODE Z LOGIN */
+
+if (localStorage.getItem("dark") === "true") {
+    document.body.classList.add("dark");
+}
+
+/* 📅 DATA */
 
 const today = new Date();
 
@@ -112,32 +117,23 @@ today.toLocaleDateString("pl-PL", {
     day: 'numeric'
 });
 
-/* CYTATY */
+/* 📜 CYTATY */
 
 const quotes = [
 
     "Alea iacta est. – Juliusz Cezar",
-
     "Veni, vidi, vici. – Juliusz Cezar",
-
     "Fortuna sprzyja odważnym.",
-
     "Senat i lud rzymski.",
-
     "Największą chwałą jest nigdy nie upaść.",
-
     "Kto panuje nad sobą, jest potężniejszy od cesarza.",
-
     "Roma invicta!",
-
     "Czas buduje imperia i je niszczy.",
-
     "Siła i honor.",
-
     "Imperium trwa dzięki lojalności."
 ];
 
-/* LOSOWY CYTAT */
+/* 🎲 LOSOWY CYTAT */
 
 const randomQuote =
 quotes[Math.floor(Math.random() * quotes.length)];
