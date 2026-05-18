@@ -1,197 +1,116 @@
 <!DOCTYPE html>
 <html lang="pl">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Media Romanum</title>
 
 <style>
-
-body {
-    margin: 0;
-    font-family: Georgia, serif;
-    background-color: #f4e1c1;
-    background-image: url('https://www.transparenttextures.com/patterns/papyrus.png');
-    color: #4b2e1e;
-}
-
-header {
-    background: #d4b483;
-    padding: 20px;
-    text-align: center;
-    border-bottom: 5px solid #8b5e3c;
-}
-
-#form {
-    max-width: 700px;
-    margin: 20px auto;
-    background: #e6c89f;
-    padding: 20px;
-    border-radius: 12px;
-}
-
-textarea, input {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 8px;
-    box-sizing: border-box;
-}
-
-button {
-    margin-top: 10px;
-    padding: 10px 18px;
-    background: #8b5e3c;
-    color: white;
-    border: none;
-    border-radius: 8px;
-}
-
-.post {
-    max-width: 700px;
-    margin: 15px auto;
-    background: #e6c89f;
-    padding: 15px;
-    border-radius: 12px;
-    border-left: 5px solid #8b5e3c;
-}
-
-img {
-    width: 100%;
-    margin-top: 10px;
-    border-radius: 10px;
-}
-
-.reactions button {
-    margin-right: 10px;
-}
-
+body{margin:0;font-family:Georgia,serif;background:#f4e1c1;background-image:url('https://www.transparenttextures.com/patterns/papyrus.png');color:#4b2e1e;}
+header{background:#d4b483;padding:20px;text-align:center;border-bottom:5px solid #8b5e3c;}
+.post{max-width:700px;margin:15px auto;background:#e6c89f;padding:15px;border-radius:12px;border-left:5px solid #8b5e3c;}
+textarea,input{width:100%;padding:10px;margin-top:10px;border:none;border-radius:8px;}
+button{padding:10px 15px;background:#8b5e3c;color:white;border:none;border-radius:8px;}
+img{width:100%;margin-top:10px;border-radius:10px;}
 </style>
 </head>
 
 <body>
 
 <header>
-    <h1>🏺 Media Romanum</h1>
+<h1>🏺 Media Romanum</h1>
 </header>
 
+<a href="Login.html" style="display:inline-block;margin:10px;padding:10px 15px;background:#8b5e3c;color:white;text-decoration:none;border-radius:8px;">
+⬅ Powrót
+</a>
+
 <div id="form">
-
-    <textarea id="text" placeholder="Post..."></textarea>
-
-    <input id="img" placeholder="Link do zdjęcia (opcjonalnie)">
-
-    <button onclick="post()">Dodaj</button>
-
+<textarea id="text"></textarea>
+<input id="img" placeholder="Link do zdjęcia">
+<button onclick="post()">Dodaj</button>
 </div>
 
 <div id="posts"></div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-    getDatabase,
-    ref,
-    push,
-    onChildAdded,
-    get,
-    update
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const firebaseConfig = {
+const db=getDatabase(initializeApp({
+apiKey:"AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
+authDomain:"dupa-a6aa0.firebaseapp.com",
+databaseURL:"https://dupa-a6aa0-default-rtdb.firebaseio.com",
+projectId:"dupa-a6aa0",
+storageBucket:"dupa-a6aa0.firebasestorage.app",
+messagingSenderId:"782529996845",
+appId:"1:782529996845:web:277ff4fcf6f4db846cf0a4"
+}));
 
-  apiKey: "AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
-  authDomain: "dupa-a6aa0.firebaseapp.com",
-  databaseURL: "https://dupa-a6aa0-default-rtdb.firebaseio.com",
-  projectId: "dupa-a6aa0",
-  storageBucket: "dupa-a6aa0.firebasestorage.app",
-  messagingSenderId: "782529996845",
-  appId: "1:782529996845:web:277ff4fcf6f4db846cf0a4"
-};
+const user=localStorage.getItem("nickname");
+const postsRef=ref(db,"posts");
 
-const db = getDatabase(initializeApp(firebaseConfig));
+window.post=function(){
+const text=document.getElementById("text").value;
+const img=document.getElementById("img").value;
+if(!text.trim())return;
 
-const user = localStorage.getItem("nickname");
-
-const postsRef = ref(db, "posts");
-
-/* POST */
-
-window.post = function() {
-
-    const text = document.getElementById("text").value;
-    const img = document.getElementById("img").value;
-
-    if(text.trim() === "") return;
-
-    push(postsRef, {
-        user,
-        text,
-        img,
-        time: Date.now(),
-        likes: {}
-    });
-
-    document.getElementById("text").value = "";
-    document.getElementById("img").value = "";
-};
-
-/* LOAD */
-
-onChildAdded(postsRef, (snap) => {
-
-    const id = snap.key;
-    const data = snap.val();
-
-    const div = document.createElement("div");
-
-    div.classList.add("post");
-
-    div.innerHTML = `
-        <b>${data.user}</b><br><br>
-        ${data.text}
-        ${data.img ? `<img src="${data.img}">` : ""}
-        <br><br>
-
-        <button onclick="like('${id}')">👍 Like</button>
-        <span id="count-${id}">
-            ${data.likes ? Object.keys(data.likes).length : 0}
-        </span>
-    `;
-
-    document.getElementById("posts").prepend(div);
+push(postsRef,{
+user,
+text,
+img,
+time:Date.now(),
+likes:{}
 });
 
-/* LIKE SYSTEM (1 user = 1 like) */
-
-window.like = async function(id) {
-
-    const postRef = ref(db, "posts/" + id);
-
-    const snap = await get(postRef);
-
-    const data = snap.val();
-
-    if(!data.likes) data.likes = {};
-
-    if(data.likes[user]) {
-        alert("Już polubiłeś ten post!");
-        return;
-    }
-
-    data.likes[user] = true;
-
-    await update(postRef, {
-        likes: data.likes
-    });
-
-    location.reload();
+document.getElementById("text").value="";
+document.getElementById("img").value="";
 };
 
+onChildAdded(postsRef,(snap)=>{
+
+const id=snap.key;
+const d=snap.val();
+
+const date=new Date(d.time);
+const formatted=
+date.toLocaleDateString("pl-PL")+" "+
+date.toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"});
+
+const div=document.createElement("div");
+div.classList.add("post");
+
+div.innerHTML=`
+<b>${d.user}</b>
+<span style="font-size:12px;color:#555;">(${formatted})</span>
+<br><br>
+${d.text}
+${d.img?`<img src="${d.img}">`:""}
+<br><br>
+<button onclick="like('${id}')">👍 ${Object.keys(d.likes||{}).length}</button>
+`;
+
+document.getElementById("posts").prepend(div);
+});
+
+window.like=async function(id){
+
+const postRef=ref(db,"posts/"+id);
+const snap=await get(postRef);
+const data=snap.val();
+
+if(!data.likes)data.likes={};
+
+if(data.likes[user]){
+alert("Już polubiłeś!");
+return;
+}
+
+data.likes[user]=true;
+
+await update(postRef,{likes:data.likes});
+location.reload();
+};
 </script>
 
 </body>
