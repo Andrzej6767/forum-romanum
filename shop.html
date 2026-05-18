@@ -1,68 +1,168 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Praemium Romanum</title>
 
 <style>
+
 body {
+    margin: 0;
     font-family: Georgia, serif;
-    background: #f4e1c1;
+    background-color: #f4e1c1;
+    background-image: url('https://www.transparenttextures.com/patterns/papyrus.png');
+    color: #4b2e1e;
     text-align: center;
-    padding: 30px;
 }
 
-.shop-item {
+header {
+    background: #d4b483;
+    padding: 20px;
+    border-bottom: 5px solid #8b5e3c;
+}
+
+.container {
+    max-width: 700px;
+    margin: 30px auto;
+}
+
+.item {
     background: #e6c89f;
     padding: 20px;
-    margin: 20px auto;
-    max-width: 400px;
-    border-radius: 10px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    border-left: 5px solid #8b5e3c;
 }
 
 button {
-    padding: 10px 20px;
+    margin-top: 10px;
+    padding: 10px 18px;
     border: none;
+    border-radius: 8px;
     background: #8b5e3c;
     color: white;
-    border-radius: 8px;
+    cursor: pointer;
 }
+
+button:hover {
+    background: #6f472d;
+}
+
+#coins {
+    font-size: 1.3rem;
+    margin-top: 10px;
+}
+
 </style>
 </head>
+
 <body>
 
-<h1>💰 Praemium Romanum</h1>
+<header>
+    <h1>💰 Praemium Romanum</h1>
+    <div id="coins"></div>
+</header>
 
-<h2>Twoje monety: 🪙 <span id="coins"></span></h2>
+<div class="container">
 
-<div class="shop-item">
-<h3>⭐ Odznaka Gwiazdy</h3>
-<p>Koszt: 5 monet</p>
-<button onclick="buyBadge('⭐',5)">Kup</button>
+    <div class="item">
+        ⭐ Złota Gwiazda przy nicku — 5 🪙
+        <br>
+        <button onclick="buy('star',5)">Kup</button>
+    </div>
+
+    <div class="item">
+        👑 Korona Rzymu — 15 🪙
+        <br>
+        <button onclick="buy('crown',15)">Kup</button>
+    </div>
+
+    <div class="item">
+        🔴 Czerwony nick — 10 🪙
+        <br>
+        <button onclick="buy('red',10)">Kup</button>
+    </div>
+
 </div>
 
-<div class="shop-item">
-<h3>👑 Odznaka Cesarza</h3>
-<p>Koszt: 10 monet</p>
-<button onclick="buyBadge('👑',10)">Kup</button>
-</div>
+<script type="module">
 
-<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+    getDatabase,
+    ref,
+    get,
+    update
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-function refresh() {
+const firebaseConfig = {
+
+  apiKey: "AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
+  authDomain: "dupa-a6aa0.firebaseapp.com",
+  databaseURL: "https://dupa-a6aa0-default-rtdb.firebaseio.com",
+  projectId: "dupa-a6aa0",
+  storageBucket: "dupa-a6aa0.firebasestorage.app",
+  messagingSenderId: "782529996845",
+  appId: "1:782529996845:web:277ff4fcf6f4db846cf0a4"
+};
+
+const db = getDatabase(initializeApp(firebaseConfig));
+
+const user = localStorage.getItem("nickname");
+
+const userRef = ref(db, "users/" + user);
+
+/* LOAD COINS */
+
+async function load() {
+
+    const snap = await get(userRef);
+
+    const data = snap.val();
+
     document.getElementById("coins").innerText =
-    localStorage.getItem("coins") || 0;
+    "Twoje monety: 🪙 " + (data.coins || 0);
 }
 
-refresh();
+load();
 
-function buyBadge(badge,cost) {
+/* BUY */
 
-    let coins = parseInt(localStorage.getItem("coins") || 0);
+window.buy = async function(item, cost) {
 
-    if(coins < cost) {
+    const snap = await get(userRef);
+
+    const data = snap.val();
+
+    if((data.coins || 0) < cost) {
+
         alert("Za mało monet!");
         return;
     }
+
+    const newCoins = (data.coins || 0) - cost;
+
+    let badge = data.badge || "";
+
+    if(item === "star") badge = "⭐";
+    if(item === "crown") badge = "👑";
+    if(item === "red") data.color = "red";
+
+    await update(userRef, {
+        coins: newCoins,
+        badge: badge,
+        color: data.color || "#4b2e1e"
+    });
+
+    alert("Zakupiono!");
+
+    load();
+};
+
+</script>
+
+</body>
 </html>
