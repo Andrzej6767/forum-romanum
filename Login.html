@@ -8,8 +8,6 @@
 
 <style>
 
-/* ===== BASE ===== */
-
 body {
     margin: 0;
     font-family: Georgia, serif;
@@ -18,7 +16,10 @@ body {
     color: #4b2e1e;
 }
 
-/* ===== HEADER ===== */
+body.dark {
+    background-color: #1e1e1e;
+    color: white;
+}
 
 header {
     background-color: #d4b483;
@@ -27,12 +28,14 @@ header {
     border-bottom: 5px solid #8b5e3c;
 }
 
+body.dark header {
+    background: #333;
+}
+
 header h1 {
     margin: 0;
     font-size: 2.5rem;
 }
-
-/* ===== NAV BUTTONS ===== */
 
 nav {
     margin-top: 15px;
@@ -48,14 +51,7 @@ nav a {
     text-decoration: none;
     color: #4b2e1e;
     font-weight: bold;
-    transition: 0.2s;
 }
-
-nav a:hover {
-    transform: scale(1.05);
-}
-
-/* ===== SETTINGS BUTTON ===== */
 
 #settingsBtn {
     position: fixed;
@@ -63,10 +59,7 @@ nav a:hover {
     right: 15px;
     font-size: 28px;
     cursor: pointer;
-    z-index: 1000;
 }
-
-/* ===== SETTINGS PANEL ===== */
 
 #settingsPanel {
     position: fixed;
@@ -76,9 +69,7 @@ nav a:hover {
     height: 100%;
     background: #d4b483;
     padding: 20px;
-    box-shadow: -5px 0 15px rgba(0,0,0,0.3);
     transition: 0.3s;
-    z-index: 999;
 }
 
 #settingsPanel.open {
@@ -89,137 +80,4 @@ nav a:hover {
     width: 100%;
     padding: 8px;
     margin-bottom: 10px;
-    border: none;
-    border-radius: 6px;
-}
-
-button {
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    background: #8b5e3c;
-    color: white;
-    cursor: pointer;
-}
-
-/* ===== DARK MODE ===== */
-
-body.dark {
-    background-color: #1e1e1e;
-    color: white;
-}
-
-body.dark header {
-    background: #333;
-}
-
-body.dark nav a {
-    background: #444;
-    color: white;
-}
-
-body.dark #settingsPanel {
-    background: #333;
-    color: white;
-}
-
-</style>
-</head>
-
-<body>
-
-<!-- ===== ZĘBATKA ===== -->
-<div id="settingsBtn">⚙️</div>
-
-<!-- ===== PANEL ===== -->
-<div id="settingsPanel">
-
-    <h2>Ustawienia</h2>
-
-    <label>Nick</label>
-    <input id="nickInput" placeholder="Nowy nick">
-    <button onclick="changeNick()">Zmień nick</button>
-
-    <hr>
-
-    <label>Kolor nicku</label>
-    <input type="color" id="colorInput">
-    <button onclick="changeColor()">Zapisz kolor</button>
-
-    <hr>
-
-    <button onclick="toggleTheme()">🌙 Tryb ciemny/jasny</button>
-
-    <hr>
-
-    <h3>Statystyki</h3>
-    <div id="stats">Brak danych</div>
-
-</div>
-
-<!-- ===== HEADER ===== -->
-
-<header>
-
-    <h1>🏛 Forum Romanum</h1>
-
-    <nav>
-        <a href="forum.html">Forum</a>
-        <a href="media.html">Media Romanum</a>
-        <a href="kalendarz.html">Kalendarz</a>
-    </nav>
-
-</header>
-
-<script>
-
-/* ===== OPEN PANEL ===== */
-
-const panel = document.getElementById("settingsPanel");
-
-document.getElementById("settingsBtn").onclick = () => {
-    panel.classList.toggle("open");
-};
-
-/* ===== NICK ===== */
-
-function changeNick() {
-    const nick = document.getElementById("nickInput").value;
-    if(!nick) return;
-    localStorage.setItem("nickname", nick);
-    alert("Nick zmieniony!");
-}
-
-/* ===== COLOR ===== */
-
-function changeColor() {
-    const color = document.getElementById("colorInput").value;
-    localStorage.setItem("nickColor", color);
-    alert("Kolor zapisany!");
-}
-
-/* ===== THEME ===== */
-
-function toggleTheme() {
-    document.body.classList.toggle("dark");
-    localStorage.setItem("dark", document.body.classList.contains("dark"));
-}
-
-/* load theme */
-
-if(localStorage.getItem("dark") === "true") {
-    document.body.classList.add("dark");
-}
-
-/* ===== STATS (placeholder) ===== */
-
-document.getElementById("stats").innerHTML =
-`
-Nick: ${localStorage.getItem("nickname") || "Anonim"}<br>
-Kolor: ${localStorage.getItem("nickColor") || "domyślny"}
-`;
-
-</script>
-
-</body>
 </html>
