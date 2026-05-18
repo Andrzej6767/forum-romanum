@@ -202,7 +202,7 @@ body.dark .card {
 
     font-size: 1.2rem;
 }
-
+<button onclick="closePanel()">Zamknij</button>
 </style>
 </head>
 
@@ -439,6 +439,9 @@ if(localStorage.getItem("dark") === "true") {
     document.body.classList.add("dark");
 }
 
+    function closePanel(){
+document.getElementById("panel").style.display="none";
+}
 /* LOGOUT */
 
 window.logout = function() {
