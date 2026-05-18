@@ -126,6 +126,17 @@ load();
 alert("Kupiono!");
 };
 
+
+function applyTheme(){
+const theme=localStorage.getItem("theme");
+
+if(theme==="dark"){
+document.body.style.backgroundColor="#111";
+document.body.style.color="#fff";
+}
+}
+
+applyTheme();
 </script>
 
 </body>
