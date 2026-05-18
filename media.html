@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,105 +17,56 @@ body {
     color: #4b2e1e;
 }
 
-/* 🌙 DARK MODE */
-body.dark {
-    background-color: #1e1e1e;
-    color: white;
-}
-
 header {
-    background-color: #d4b483;
+    background: #d4b483;
     padding: 20px;
     text-align: center;
     border-bottom: 5px solid #8b5e3c;
 }
 
-body.dark header {
-    background: #333;
-}
-
-header h1 {
-    margin: 0;
-    font-size: 2.5rem;
-}
-
-#postForm {
+#form {
     max-width: 700px;
     margin: 20px auto;
     background: #e6c89f;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 12px;
 }
 
-body.dark #postForm {
-    background: #333;
-}
-
-textarea, input[type="text"] {
+textarea, input {
     width: 100%;
     padding: 10px;
+    margin-top: 10px;
     border: none;
     border-radius: 8px;
     box-sizing: border-box;
-    font-size: 16px;
-    margin-top: 10px;
 }
 
 button {
     margin-top: 10px;
-    padding: 12px 20px;
+    padding: 10px 18px;
+    background: #8b5e3c;
+    color: white;
     border: none;
     border-radius: 8px;
-    background-color: #8b5e3c;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #6f472d;
-}
-
-#posts {
-    max-width: 700px;
-    margin: auto;
-    padding: 20px;
 }
 
 .post {
+    max-width: 700px;
+    margin: 15px auto;
     background: #e6c89f;
     padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
+    border-radius: 12px;
     border-left: 5px solid #8b5e3c;
-    transition: 0.2s;
 }
 
-body.dark .post {
-    background: #333;
-}
-
-.post img {
+img {
     width: 100%;
     margin-top: 10px;
     border-radius: 10px;
 }
 
-.meta {
-    font-size: 14px;
-    margin-bottom: 10px;
-}
-
-.reactions {
-    margin-top: 10px;
-}
-
-.back {
-    display: inline-block;
-    margin: 20px;
-    text-decoration: none;
-    color: #4b2e1e;
-    font-weight: bold;
+.reactions button {
+    margin-right: 10px;
 }
 
 </style>
@@ -126,15 +78,13 @@ body.dark .post {
     <h1>🏺 Media Romanum</h1>
 </header>
 
-<a class="back" href="Login.html">⬅ Powrót</a>
+<div id="form">
 
-<div id="postForm">
+    <textarea id="text" placeholder="Post..."></textarea>
 
-    <textarea id="postText" placeholder="Napisz post..."></textarea>
+    <input id="img" placeholder="Link do zdjęcia (opcjonalnie)">
 
-    <input type="text" id="imageUrl" placeholder="Link do zdjęcia (opcjonalnie)">
-
-    <button onclick="addPost()">Dodaj post</button>
+    <button onclick="post()">Dodaj</button>
 
 </div>
 
@@ -148,8 +98,8 @@ import {
     ref,
     push,
     onChildAdded,
-    update,
-    get
+    get,
+    update
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
@@ -163,105 +113,83 @@ const firebaseConfig = {
   appId: "1:782529996845:web:277ff4fcf6f4db846cf0a4"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const db = getDatabase(initializeApp(firebaseConfig));
+
+const user = localStorage.getItem("nickname");
+
 const postsRef = ref(db, "posts");
 
-/* 🌙 DARK MODE */
-if (localStorage.getItem("dark") === "true") {
-    document.body.classList.add("dark");
-}
+/* POST */
 
-/* ➕ DODAWANIE POSTA */
-window.addPost = function() {
+window.post = function() {
 
-    const text = document.getElementById("postText").value;
-    const image = document.getElementById("imageUrl").value;
+    const text = document.getElementById("text").value;
+    const img = document.getElementById("img").value;
 
     if(text.trim() === "") return;
 
-    const nickname =
-    localStorage.getItem("nickname") || "Anonim";
-
-    const color =
-    localStorage.getItem("nickColor") || "#4b2e1e";
-
-    const now = new Date();
-
-    const date =
-    now.toLocaleDateString("pl-PL") +
-    " " +
-    now.getHours().toString().padStart(2,'0') +
-    ":" +
-    now.getMinutes().toString().padStart(2,'0');
-
     push(postsRef, {
-        nickname,
-        color,
+        user,
         text,
-        image,
-        date,
-        likes: 0,
-        dislikes: 0,
-        voters: {}
+        img,
+        time: Date.now(),
+        likes: {}
     });
 
-    document.getElementById("postText").value = "";
-    document.getElementById("imageUrl").value = "";
+    document.getElementById("text").value = "";
+    document.getElementById("img").value = "";
 };
 
-/* 📥 WYŚWIETLANIE */
-onChildAdded(postsRef, (data) => {
+/* LOAD */
 
-    const post = data.val();
+onChildAdded(postsRef, (snap) => {
+
+    const id = snap.key;
+    const data = snap.val();
 
     const div = document.createElement("div");
+
     div.classList.add("post");
 
     div.innerHTML = `
+        <b>${data.user}</b><br><br>
+        ${data.text}
+        ${data.img ? `<img src="${data.img}">` : ""}
+        <br><br>
 
-        <div class="meta">
-            <strong style="color:${post.color}">
-                ${post.nickname}
-            </strong>
-            • ${post.date}
-        </div>
-
-        <div>${post.text}</div>
-
-        ${post.image ? `<img src="${post.image}">` : ""}
-
-        <div class="reactions">
-
-            <button onclick="react('${data.key}','likes')">
-                👍 ${post.likes || 0}
-            </button>
-
-            <button onclick="react('${data.key}','dislikes')">
-                👎 ${post.dislikes || 0}
-            </button>
-
-        </div>
-
+        <button onclick="like('${id}')">👍 Like</button>
+        <span id="count-${id}">
+            ${data.likes ? Object.keys(data.likes).length : 0}
+        </span>
     `;
 
     document.getElementById("posts").prepend(div);
 });
 
-/* 👍👎 REAKCJE (POPRAWIONE - bez reload!) */
-window.react = function(id, type) {
+/* LIKE SYSTEM (1 user = 1 like) */
+
+window.like = async function(id) {
 
     const postRef = ref(db, "posts/" + id);
 
-    get(postRef).then((snap) => {
+    const snap = await get(postRef);
 
-        const data = snap.val();
+    const data = snap.val();
 
-        update(postRef, {
-            [type]: (data[type] || 0) + 1
-        });
+    if(!data.likes) data.likes = {};
 
+    if(data.likes[user]) {
+        alert("Już polubiłeś ten post!");
+        return;
+    }
+
+    data.likes[user] = true;
+
+    await update(postRef, {
+        likes: data.likes
     });
+
+    location.reload();
 };
 
 </script>
