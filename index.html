@@ -1,69 +1,268 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Media Romanum</title>
+<title>Forum Romanum - Logowanie</title>
 
 <style>
 
 body {
+
     margin: 0;
+    height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
     font-family: Georgia, serif;
+
     background-color: #f4e1c1;
     background-image: url('https://www.transparenttextures.com/patterns/papyrus.png');
+
     color: #4b2e1e;
 }
 
-header {
-    background-color: #d4b483;
-    padding: 20px;
+.login-box {
+
+    background: rgba(230,200,159,0.95);
+
+    padding: 40px;
+
+    border-radius: 16px;
+
+    width: 320px;
+
     text-align: center;
-    border-bottom: 5px solid #8b5e3c;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
-#postForm {
-    max-width: 700px;
-    margin: 20px auto;
-    background: #e6c89f;
-    padding: 20px;
-    border-radius: 10px;
+h1 {
+    margin-top: 0;
+    font-size: 2.5rem;
 }
 
-textarea,input[type="text"] {
+input {
+
     width: 100%;
-    padding: 10px;
-    margin-top: 10px;
+
+    padding: 12px;
+
+    margin-top: 12px;
+
     border: none;
+
     border-radius: 8px;
+
+    font-size: 16px;
+
     box-sizing: border-box;
 }
 
 button {
-    margin-top: 10px;
-    padding: 12px 20px;
+
+    width: 100%;
+
+    margin-top: 15px;
+
+    padding: 12px;
+
     border: none;
+
     border-radius: 8px;
+
     background-color: #8b5e3c;
+
     color: white;
+
+    font-size: 16px;
+
     cursor: pointer;
 }
 
-#posts {
-    max-width: 700px;
-    margin: auto;
-    padding: 20px;
+button:hover {
+    background-color: #6f472d;
 }
 
-.post {
-    background: #e6c89f;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
+#status {
+
+    margin-top: 15px;
+
+    font-weight: bold;
 }
 
-.post img {
-    width: 100%;
-    margin-top: 10px;
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+
+    <h1>🏛 Forum Romanum</h1>
+
+    <input
+        type="text"
+        id="nickname"
+        placeholder="Nick"
+    >
+
+    <input
+        type="password"
+        id="password"
+        placeholder="Hasło"
+    >
+
+    <button onclick="register()">
+        Zarejestruj
+    </button>
+
+    <button onclick="login()">
+        Zaloguj
+    </button>
+
+    <div id="status"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getDatabase,
+    ref,
+    set,
+    get,
+    child
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* FIREBASE */
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
+
+  authDomain: "dupa-a6aa0.firebaseapp.com",
+
+  databaseURL: "https://dupa-a6aa0-default-rtdb.firebaseio.com",
+
+  projectId: "dupa-a6aa0",
+
+  storageBucket: "dupa-a6aa0.firebasestorage.app",
+
+  messagingSenderId: "782529996845",
+
+  appId: "1:782529996845:web:277ff4fcf6f4db846cf0a4"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+/* STATUS */
+
+function setStatus(text,color="darkred") {
+
+    const status =
+    document.getElementById("status");
+
+    status.innerText = text;
+    status.style.color = color;
+}
+
+/* REGISTER */
+
+window.register = async function() {
+
+    const nickname =
+    document.getElementById("nickname").value.trim();
+
+    const password =
+    document.getElementById("password").value;
+
+    if(nickname === "" || password === "") {
+
+        setStatus("Uzupełnij pola!");
+        return;
+    }
+
+    const snapshot =
+    await get(child(ref(db), "users/" + nickname));
+
+    if(snapshot.exists()) {
+
+        setStatus("Nick już istnieje!");
+        return;
+    }
+
+    await set(ref(db, "users/" + nickname), {
+
+        password: password,
+
+        coins: 0,
+
+        badge: "",
+
+        color: "#4b2e1e"
+    });
+
+    setStatus("Konto utworzone!", "green");
+};
+
+/* LOGIN */
+
+window.login = async function() {
+
+    const nickname =
+    document.getElementById("nickname").value.trim();
+
+    const password =
+    document.getElementById("password").value;
+
+    const snapshot =
+    await get(child(ref(db), "users/" + nickname));
+
+    if(!snapshot.exists()) {
+
+        setStatus("Nie ma takiego użytkownika!");
+        return;
+    }
+
+    const user = snapshot.val();
+
+    if(user.password !== password) {
+
+        setStatus("Błędne hasło!");
+        return;
+    }
+
+    /* SESSION */
+
+    localStorage.setItem("nickname", nickname);
+
+    localStorage.setItem("coins", user.coins || 0);
+
+    localStorage.setItem("badge", user.badge || "");
+
+    localStorage.setItem("nickColor", user.color || "#4b2e1e");
+
+    setStatus("Logowanie...", "green");
+
+    setTimeout(() => {
+
+        window.location.href = "Login.html";
+
+    }, 1000);
+};
+
+</script>
+
+</body>
 </html>
