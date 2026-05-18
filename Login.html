@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,23 +10,40 @@
 <style>
 
 body {
+
     margin: 0;
+
     font-family: Georgia, serif;
+
     background-color: #f4e1c1;
+
     background-image: url('https://www.transparenttextures.com/patterns/papyrus.png');
+
     color: #4b2e1e;
 }
 
+/* 🌙 DARK MODE */
+
 body.dark {
+
     background-color: #1e1e1e;
+
     color: white;
 }
 
+/* HEADER */
+
 header {
+
     background-color: #d4b483;
+
     padding: 20px;
+
     text-align: center;
+
     border-bottom: 5px solid #8b5e3c;
+
+    position: relative;
 }
 
 body.dark header {
@@ -33,51 +51,404 @@ body.dark header {
 }
 
 header h1 {
+
     margin: 0;
+
     font-size: 2.5rem;
 }
 
-nav {
-    margin-top: 15px;
-}
-
-nav a {
-    display: inline-block;
-    margin: 10px;
-    padding: 10px 18px;
-    background-color: #e6c89f;
-    border: 2px solid #8b5e3c;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #4b2e1e;
-    font-weight: bold;
-}
+/* SETTINGS */
 
 #settingsBtn {
-    position: fixed;
-    top: 15px;
-    right: 15px;
+
+    position: absolute;
+
+    top: 20px;
+
+    right: 20px;
+
     font-size: 28px;
+
     cursor: pointer;
 }
 
 #settingsPanel {
+
     position: fixed;
+
     top: 0;
-    right: -320px;
-    width: 300px;
+
+    right: -340px;
+
+    width: 320px;
+
     height: 100%;
+
     background: #d4b483;
+
     padding: 20px;
+
+    box-sizing: border-box;
+
     transition: 0.3s;
+
+    overflow-y: auto;
+
+    z-index: 999;
+}
+
+body.dark #settingsPanel {
+
+    background: #333;
 }
 
 #settingsPanel.open {
+
     right: 0;
 }
 
 #settingsPanel input {
+
     width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
+
+    padding: 10px;
+
+    margin-top: 10px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    box-sizing: border-box;
+}
+
+button {
+
+    margin-top: 10px;
+
+    padding: 10px 18px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background-color: #8b5e3c;
+
+    color: white;
+
+    cursor: pointer;
+}
+
+button:hover {
+
+    background-color: #6f472d;
+}
+
+/* DASHBOARD */
+
+.dashboard {
+
+    display: grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(220px,1fr));
+
+    gap: 25px;
+
+    padding: 35px;
+}
+
+.card {
+
+    background: rgba(230,200,159,0.9);
+
+    padding: 30px;
+
+    border-radius: 18px;
+
+    text-align: center;
+
+    transition: 0.2s;
+
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+body.dark .card {
+
+    background: #333;
+}
+
+.card:hover {
+
+    transform: translateY(-5px);
+}
+
+.card a {
+
+    text-decoration: none;
+
+    color: inherit;
+
+    font-size: 1.3rem;
+
+    font-weight: bold;
+}
+
+.info {
+
+    text-align: center;
+
+    margin-top: 20px;
+
+    font-size: 1.2rem;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+    <h1>🏛 Forum Romanum</h1>
+
+    <div id="settingsBtn">
+        ⚙️
+    </div>
+
+</header>
+
+<div class="info">
+
+    Witaj,
+    <span id="nickDisplay"></span>
+
+</div>
+
+<div class="dashboard">
+
+    <div class="card">
+
+        <a href="forum.html">
+            🏛 Forum
+        </a>
+
+    </div>
+
+    <div class="card">
+
+        <a href="media.html">
+            🏺 Media Romanum
+        </a>
+
+    </div>
+
+    <div class="card">
+
+        <a href="kalendarz.html">
+            📅 Kalendarz
+        </a>
+
+    </div>
+
+    <div class="card">
+
+        <a href="shop.html">
+            💰 Praemium Romanum
+        </a>
+
+    </div>
+
+</div>
+
+<!-- SETTINGS PANEL -->
+
+<div id="settingsPanel">
+
+    <h2>⚙️ Ustawienia</h2>
+
+    <hr>
+
+    <h3>👤 Profil</h3>
+
+    <div id="profileInfo"></div>
+
+    <hr>
+
+    <label>Kolor nicku</label>
+
+    <input type="color" id="colorPicker">
+
+    <button onclick="saveColor()">
+        Zapisz kolor
+    </button>
+
+    <hr>
+
+    <button onclick="toggleTheme()">
+        🌙 Tryb ciemny/jasny
+    </button>
+
+    <hr>
+
+    <button onclick="logout()">
+        🚪 Wyloguj
+    </button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getDatabase,
+    ref,
+    get,
+    update
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* FIREBASE */
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
+
+  authDomain: "dupa-a6aa0.firebaseapp.com",
+
+  databaseURL: "https://dupa-a6aa0-default-rtdb.firebaseio.com",
+
+  projectId: "dupa-a6aa0",
+
+  storageBucket: "dupa-a6aa0.firebasestorage.app",
+
+  messagingSenderId: "782529996845",
+
+  appId: "1:782529996845:web:277ff4fcf6f4db846cf0a4"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+/* USER */
+
+const nickname =
+localStorage.getItem("nickname");
+
+if(!nickname) {
+
+    window.location.href = "index.html";
+}
+
+/* SETTINGS */
+
+const settingsBtn =
+document.getElementById("settingsBtn");
+
+const panel =
+document.getElementById("settingsPanel");
+
+settingsBtn.onclick = () => {
+
+    panel.classList.toggle("open");
+};
+
+/* PROFILE */
+
+async function loadProfile() {
+
+    const snap =
+    await get(ref(db, "users/" + nickname));
+
+    const user = snap.val();
+
+    document.getElementById("nickDisplay").innerHTML = `
+
+        <span style="color:${user.color}">
+            ${user.badge || ""}
+            ${nickname}
+        </span>
+
+    `;
+
+    document.getElementById("profileInfo").innerHTML = `
+
+        <b>Nick:</b>
+        ${nickname}
+
+        <br><br>
+
+        <b>Monety:</b>
+        🪙 ${user.coins || 0}
+
+        <br><br>
+
+        <b>Odznaka:</b>
+        ${user.badge || "Brak"}
+
+    `;
+
+    document.getElementById("colorPicker").value =
+    user.color || "#4b2e1e";
+
+    localStorage.setItem("coins", user.coins || 0);
+    localStorage.setItem("badge", user.badge || "");
+    localStorage.setItem("nickColor", user.color || "#4b2e1e");
+}
+
+loadProfile();
+
+/* SAVE COLOR */
+
+window.saveColor = async function() {
+
+    const color =
+    document.getElementById("colorPicker").value;
+
+    await update(
+        ref(db, "users/" + nickname),
+        {
+            color: color
+        }
+    );
+
+    localStorage.setItem("nickColor", color);
+
+    alert("Kolor zapisany!");
+
+    loadProfile();
+};
+
+/* DARK MODE */
+
+window.toggleTheme = function() {
+
+    document.body.classList.toggle("dark");
+
+    localStorage.setItem(
+        "dark",
+        document.body.classList.contains("dark")
+    );
+};
+
+if(localStorage.getItem("dark") === "true") {
+
+    document.body.classList.add("dark");
+}
+
+/* LOGOUT */
+
+window.logout = function() {
+
+    localStorage.clear();
+
+    window.location.href = "index.html";
+};
+
+</script>
+
+</body>
 </html>
