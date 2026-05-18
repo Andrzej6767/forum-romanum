@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Praemium Romanum</title>
+
+<style>
+body {
+    font-family: Georgia, serif;
+    background: #f4e1c1;
+    text-align: center;
+    padding: 30px;
+}
+
+.shop-item {
+    background: #e6c89f;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 400px;
+    border-radius: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    background: #8b5e3c;
+    color: white;
+    border-radius: 8px;
+}
+</style>
+</head>
+<body>
+
+<h1>💰 Praemium Romanum</h1>
+
+<h2>Twoje monety: 🪙 <span id="coins"></span></h2>
+
+<div class="shop-item">
+<h3>⭐ Odznaka Gwiazdy</h3>
+<p>Koszt: 5 monet</p>
+<button onclick="buyBadge('⭐',5)">Kup</button>
+</div>
+
+<div class="shop-item">
+<h3>👑 Odznaka Cesarza</h3>
+<p>Koszt: 10 monet</p>
+<button onclick="buyBadge('👑',10)">Kup</button>
+</div>
+
+<script>
+
+function refresh() {
+    document.getElementById("coins").innerText =
+    localStorage.getItem("coins") || 0;
+}
+
+refresh();
+
+function buyBadge(badge,cost) {
+
+    let coins = parseInt(localStorage.getItem("coins") || 0);
+
+    if(coins < cost) {
+        alert("Za mało monet!");
+        return;
+    }
+</html>
