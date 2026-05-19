@@ -174,8 +174,7 @@ button:hover {
 
     display: grid;
 
-    grid-template-columns:
-    repeat(auto-fit,minmax(220px,1fr));
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
 
     gap: 25px;
 
@@ -233,6 +232,22 @@ body.dark .card {
     }
 }
 
+/* 🪙 COIN HUD */
+
+#coinHud{
+    position:fixed;
+    bottom:15px;
+    left:15px;
+    background:rgba(139,94,60,0.95);
+    color:white;
+    padding:10px 14px;
+    border-radius:12px;
+    font-size:18px;
+    font-weight:bold;
+    box-shadow:0 5px 15px rgba(0,0,0,0.3);
+    z-index:1000;
+}
+
 </style>
 </head>
 
@@ -242,9 +257,7 @@ body.dark .card {
 
     <h1>🏛 Forum Romanum</h1>
 
-    <div id="settingsBtn">
-        ⚙️
-    </div>
+    <div id="settingsBtn">⚙️</div>
 
 </header>
 
@@ -257,37 +270,13 @@ body.dark .card {
 
 <div class="dashboard">
 
-    <div class="card">
+    <div class="card"><a href="forum.html">🏛 Forum</a></div>
 
-        <a href="forum.html">
-            🏛 Forum
-        </a>
+    <div class="card"><a href="media.html">🏺 Media Romanum</a></div>
 
-    </div>
+    <div class="card"><a href="kalendarz.html">📅 Kalendarz</a></div>
 
-    <div class="card">
-
-        <a href="media.html">
-            🏺 Media Romanum
-        </a>
-
-    </div>
-
-    <div class="card">
-
-        <a href="kalendarz.html">
-            📅 Kalendarz
-        </a>
-
-    </div>
-
-    <div class="card">
-
-        <a href="casino.html">
-            💰 Ova aurea Romani
-        </a>
-
-    </div>
+    <div class="card"><a href="casino.html">💰 Ova aurea Romani</a></div>
 
 </div>
 
@@ -306,47 +295,39 @@ body.dark .card {
     <hr>
 
     <label>Kolor nicku</label>
-
     <input type="color" id="colorPicker">
 
-    <button onclick="saveColor()">
-        🎨 Zapisz kolor
-    </button>
+    <button onclick="saveColor()">🎨 Zapisz kolor</button>
 
     <hr>
 
-    <button onclick="toggleTheme()">
-        🌙 Tryb ciemny/jasny
-    </button>
+    <button onclick="toggleTheme()">🌙 Tryb ciemny/jasny</button>
 
     <hr>
 
-    <button onclick="logout()">
-        🚪 Wyloguj
-    </button>
+    <button onclick="logout()">🚪 Wyloguj</button>
 
     <hr>
 
-    <button onclick="closePanel()">
-        ❌ Zamknij
-    </button>
+    <button onclick="closePanel()">❌ Zamknij</button>
 
+</div>
+
+<!-- 🪙 COIN HUD -->
+<div id="coinHud">
+    🪙 <span id="coinCount">0</span>
 </div>
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
     getDatabase,
     ref,
     get,
     update
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-/* FIREBASE */
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
 
@@ -366,100 +347,64 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 const db = getDatabase(app);
 
-/* USER */
-
-const nickname =
-localStorage.getItem("nickname");
+const nickname = localStorage.getItem("nickname");
 
 if(!nickname){
-
     window.location.href = "index.html";
 }
 
-/* SETTINGS */
-
-const settingsBtn =
-document.getElementById("settingsBtn");
-
-const panel =
-document.getElementById("settingsPanel");
+const settingsBtn = document.getElementById("settingsBtn");
+const panel = document.getElementById("settingsPanel");
 
 settingsBtn.onclick = () => {
-
     panel.classList.toggle("open");
 };
 
-/* CLOSE PANEL */
-
 window.closePanel = function(){
-
     panel.classList.remove("open");
 };
 
-/* PROFILE */
-
 async function loadProfile(){
 
-    const snap =
-    await get(ref(db, "users/" + nickname));
-
+    const snap = await get(ref(db, "users/" + nickname));
     const user = snap.val();
 
     document.getElementById("nickDisplay").innerHTML = `
-
         <span style="color:${user.color || "#4b2e1e"}">
             ${user.badge || ""}
             ${nickname}
         </span>
-
     `;
 
     document.getElementById("profileInfo").innerHTML = `
-
-        <b>Nick:</b>
-        ${nickname}
-
+        <b>Nick:</b> ${nickname}
         <br><br>
-
-        <b>Monety:</b>
-        🪙 ${user.coins || 0}
-
-        <br><br>
-
-        <b>Odznaka:</b>
-        ${user.badge || "Brak"}
-
+        <b>Odznaka:</b> ${user.badge || "Brak"}
     `;
 
     document.getElementById("colorPicker").value =
     user.color || "#4b2e1e";
+
+    // 🪙 HUD MONET
+    document.getElementById("coinCount").textContent =
+    user.coins || 0;
 }
 
 loadProfile();
 
-/* SAVE COLOR */
-
 window.saveColor = async function(){
 
-    const color =
-    document.getElementById("colorPicker").value;
+    const color = document.getElementById("colorPicker").value;
 
-    await update(
-        ref(db, "users/" + nickname),
-        {
-            color: color
-        }
-    );
+    await update(ref(db, "users/" + nickname), {
+        color: color
+    });
 
     alert("Kolor zapisany!");
-
     loadProfile();
 };
-
-/* DARK MODE */
 
 window.toggleTheme = function(){
 
@@ -472,16 +417,11 @@ window.toggleTheme = function(){
 };
 
 if(localStorage.getItem("dark") === "true"){
-
     document.body.classList.add("dark");
 }
 
-/* LOGOUT */
-
 window.logout = function(){
-
     localStorage.clear();
-
     window.location.href = "index.html";
 };
 
