@@ -169,11 +169,20 @@ window.spin = async function(){
         await sleep(100);
     }
 
-    const result = [
+const win = Math.random() < 0.2; // 20% szansy
+
+let result = [];
+
+if(win){
+    const lucky = randomSymbol();
+    result = [lucky, lucky, lucky];
+} else {
+    result = [
         randomSymbol(),
         randomSymbol(),
         randomSymbol()
     ];
+}
 
     slotEls.forEach((s,i)=> s.textContent = result[i]);
 
