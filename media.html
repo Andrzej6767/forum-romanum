@@ -28,20 +28,14 @@ header{
     padding:15px;
     border-radius:12px;
     border-left:5px solid #8b5e3c;
-    box-shadow:0 10px 20px rgba(0,0,0,0.15);
 }
 
-textarea{
+textarea, input{
     width:100%;
     padding:10px;
     margin-top:10px;
     border:none;
     border-radius:8px;
-    resize:none;
-}
-
-input[type="file"]{
-    margin-top:10px;
 }
 
 button{
@@ -52,10 +46,6 @@ button{
     border-radius:8px;
     margin-top:10px;
     cursor:pointer;
-}
-
-button:hover{
-    background:#6f472d;
 }
 
 img{
@@ -76,46 +66,58 @@ img{
 ⬅ Powrót
 </a>
 
-<div id="form" class="post">
+<div class="post">
 
-    <textarea id="text" placeholder="Napisz coś..."></textarea>
+<textarea id="text" placeholder="Napisz coś..."></textarea>
 
-    <input type="file" id="file">
+<input type="file" id="file">
 
-    <button onclick="post()">📤 Dodaj post</button>
+<button onclick="post()">Dodaj post</button>
 
 </div>
 
 <div id="posts"></div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, onChildAdded, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-import {
-getDatabase, ref, push, onChildAdded, get, update
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const app = initializeApp({
+apiKey:"AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
+authDomain:"dupa-a6aa0.firebaseapp.com",
+databaseURL:"https://dupa-a6aa0-default-rtdb.firebaseio.com",
+projectId:"dupa-a6aa0",
+storageBucket:"dupa-a6aa0.firebasestorage.app",
+messagingSenderId:"782529996845",
+appId:"1:782529996845:web:277ff4fcf6f4db846cf0a4"
+});
 
-import {
-getStorage, ref as sRef, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
-const firebaseConfig = {
-apiKey: "AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
-authDomain: "dupa-a6aa0.firebaseapp.com",
-databaseURL: "https://dupa-a6aa0-default-rtdb.firebaseio.com",
-projectId: "dupa-a6aa0",
-storageBucket: "dupa-a6aa0.firebasestorage.app",
-messagingSenderId: "782529996845",
-appId: "1:782529996845:web:277ff4fcf6f4db846cf0a4"
-};
-
-const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const storage = getStorage(app);
 
 const user = localStorage.getItem("nickname");
-const postsRef = ref(db, "posts");
+const postsRef = ref(db,"posts");
+
+// 🔥 TWOJE CLOUDINARY DANE
+const CLOUD_NAME = "dqoqromys";
+const UPLOAD_PRESET = "forum_upload";
+
+async function uploadToCloudinary(file){
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+        {
+            method:"POST",
+            body:formData
+        }
+    );
+
+    const data = await res.json();
+    return data.secure_url;
+}
 
 window.post = async function(){
 
@@ -126,14 +128,8 @@ window.post = async function(){
 
     let imageUrl = "";
 
-    // 📷 UPLOAD ZDJĘCIA DO FIREBASE STORAGE
     if(file){
-
-        const fileRef = sRef(storage, "images/" + Date.now() + "_" + file.name);
-
-        await uploadBytes(fileRef, file);
-
-        imageUrl = await getDownloadURL(fileRef);
+        imageUrl = await uploadToCloudinary(file);
     }
 
     push(postsRef,{
@@ -144,54 +140,28 @@ window.post = async function(){
         likes:{}
     });
 
-    document.getElementById("text").value = "";
-    document.getElementById("file").value = "";
+    document.getElementById("text").value="";
+    document.getElementById("file").value="";
 };
 
 onChildAdded(postsRef,(snap)=>{
 
-    const id = snap.key;
-    const d = snap.val();
+    const id=snap.key;
+    const d=snap.val();
 
-    const date = new Date(d.time);
-    const formatted =
-        date.toLocaleDateString("pl-PL")+" "+
-        date.toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"});
-
-    const div = document.createElement("div");
+    const div=document.createElement("div");
     div.classList.add("post");
 
-    div.innerHTML = `
+    div.innerHTML=`
         <b>${d.user}</b>
-        <span style="font-size:12px;color:#555;">(${formatted})</span>
         <br><br>
         ${d.text || ""}
         ${d.img ? `<img src="${d.img}">` : ""}
         <br><br>
-        <button onclick="like('${id}')">👍 ${Object.keys(d.likes||{}).length}</button>
     `;
 
     document.getElementById("posts").prepend(div);
 });
-
-window.like = async function(id){
-
-    const postRef = ref(db,"posts/"+id);
-    const snap = await get(postRef);
-    const data = snap.val();
-
-    if(!data.likes) data.likes = {};
-
-    if(data.likes[user]){
-        alert("Już polubiłeś!");
-        return;
-    }
-
-    data.likes[user] = true;
-
-    await update(postRef,{likes:data.likes});
-    location.reload();
-};
 
 </script>
 
