@@ -224,8 +224,15 @@ onChildAdded(postsRef, async (snap)=>{
     const color =
     userData.color || "#4b2e1e";
 
-    const badge =
-    userData.badge || "";
+   let badge = "";
+
+if(userData.badges?.fanRomek){
+    badge += "🤑 ";
+}
+
+if(userData.badges?.gladiator){
+    badge += "⚔ ";
+}
 
     // DATE
     const date =
