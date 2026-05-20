@@ -1,9 +1,12 @@
+# forum.html
+
+```html
 <!DOCTYPE html>
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Forum Romanum</title>
+<title>Mercator Romanus</title>
 
 <style>
 body{
@@ -21,48 +24,121 @@ header{
     border-bottom:5px solid #8b5e3c;
 }
 
-#chat{
-    height: calc(100vh - 160px);
-    overflow-y:auto;
-    padding:20px;
-    padding-bottom:120px; /* kluczowa poprawka */
-    box-sizing:border-box;
-}
-
-.message{
-    background:#e6c89f;
-    padding:12px;
-    margin-bottom:10px;
-    border-radius:10px;
-    border-left:5px solid #8b5e3c;
-}
-
-.input{
-    position:fixed;
-    bottom:0;
-    left:0;
-    width:100%;
+#topBar{
     display:flex;
-    padding:10px;
-    background:#d4b483;
-    box-sizing:border-box;
-    border-top:2px solid #8b5e3c;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px;
 }
 
-input{
-    flex:1;
-    padding:10px;
-    border:none;
+.backBtn{
+    background:#8b5e3c;
+    color:white;
+    padding:10px 15px;
     border-radius:8px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+#coins{
+    background:#8b5e3c;
+    color:white;
+    padding:10px 15px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+#merchant{
+    max-width:1000px;
+    margin:20px auto;
+    text-align:center;
+}
+
+#merchant img{
+    width:220px;
+}
+
+#merchant h2{
+    margin-top:10px;
+    font-size:2rem;
+}
+
+#market{
+    max-width:1100px;
+    margin:30px auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:25px;
+    padding:20px;
+}
+
+.item{
+    background:#e6c89f;
+    border-radius:18px;
+    padding:25px;
+    text-align:center;
+    box-shadow:0 10px 20px rgba(0,0,0,0.2);
+    border:3px solid #8b5e3c;
+    transition:0.25s;
+}
+
+.item:hover{
+    transform:translateY(-5px) scale(1.02);
+}
+
+.itemIcon{
+    font-size:60px;
+    margin-bottom:15px;
+}
+
+.item h3{
+    margin:10px 0;
+}
+
+.price{
+    margin-top:15px;
+    font-size:20px;
+    font-weight:bold;
 }
 
 button{
-    margin-left:10px;
-    padding:10px 18px;
+    margin-top:15px;
+    padding:12px 18px;
     border:none;
-    border-radius:8px;
+    border-radius:10px;
     background:#8b5e3c;
     color:white;
+    cursor:pointer;
+    width:100%;
+    font-size:16px;
+    font-weight:bold;
+}
+
+button:hover{
+    background:#6f472d;
+}
+
+button:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
+}
+
+#msg{
+    text-align:center;
+    margin:20px;
+    font-size:20px;
+    font-weight:bold;
+}
+
+@media(max-width:700px){
+
+    #merchant img{
+        width:160px;
+    }
+
+    #merchant h2{
+        font-size:1.5rem;
+    }
 }
 </style>
 </head>
@@ -70,23 +146,93 @@ button{
 <body>
 
 <header>
-<h1>🏛 Forum Romanum</h1>
+<h1>🏺 Mercator Romanus</h1>
 </header>
 
-<a href="Login.html" style="display:inline-block;margin:10px;padding:10px 15px;background:#8b5e3c;color:white;text-decoration:none;border-radius:8px;">
+<div id="topBar">
+
+<a href="Login.html" class="backBtn">
 ⬅ Powrót
 </a>
 
-<div id="chat"></div>
-
-<div class="input">
-<input id="msg" placeholder="Napisz wiadomość...">
-<button onclick="send()">Wyślij</button>
+<div id="coins">
+🪙 <span id="coinCount">0</span>
 </div>
 
+</div>
+
+<div id="merchant">
+
+<img src="https://i.imgur.com/XM34Y6a.png">
+
+<h2>🧔 Kupiec Romulus zaprasza!</h2>
+
+<p>
+Witaj podróżniku. Wymień swoje monety na wyjątkowe przedmioty.
+</p>
+
+</div>
+
+<div id="market">
+
+<div class="item">
+
+<div class="itemIcon">
+👑
+</div>
+
+<h3>Złoty nick</h3>
+
+<p>
+Twój nick będzie wyświetlany złotym kolorem w Media Romanum.
+</p>
+
+<div class="price">
+🪙 1 moneta
+</div>
+
+<button id="goldBtn" onclick="buyGold()">
+Kup
+</button>
+
+</div>
+
+<div class="item">
+
+<div class="itemIcon">
+🤑
+</div>
+
+<h3>Fan Romka</h3>
+
+<p>
+Odznaka 🤑 Fan Romka będzie widoczna obok Twojego nicku.
+</p>
+
+<div class="price">
+🪙 1 moneta
+</div>
+
+<button id="badgeBtn" onclick="buyBadge()">
+Kup
+</button>
+
+</div>
+
+</div>
+
+<div id="msg"></div>
+
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+import {
+getDatabase,
+ref,
+get,
+update
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
@@ -98,59 +244,106 @@ messagingSenderId:"782529996845",
 appId:"1:782529996845:web:277ff4fcf6f4db846cf0a4"
 };
 
-const db=getDatabase(initializeApp(firebaseConfig));
-const user=localStorage.getItem("nickname");
-const chatRef=ref(db,"messages");
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-window.send=function(){
-const text=document.getElementById("msg").value;
-if(!text.trim())return;
+const user = localStorage.getItem("nickname");
 
-push(chatRef,{
-user,
-text,
-time:Date.now()
+if(!user){
+window.location.href = "index.html";
+}
+
+const userRef = ref(db,"users/" + user);
+
+async function loadUser(){
+
+const snap = await get(userRef);
+const data = snap.val();
+
+if(!data) return;
+
+document.getElementById("coinCount").textContent = data.coins || 0;
+
+// złoty nick już kupiony
+if(data.goldNick){
+
+const btn = document.getElementById("goldBtn");
+btn.disabled = true;
+btn.textContent = "Kupiono";
+}
+
+// badge już kupiony
+if(data.badge === "🤑 Fan Romka"){
+
+const btn = document.getElementById("badgeBtn");
+btn.disabled = true;
+btn.textContent = "Kupiono";
+}
+}
+
+loadUser();
+
+window.buyGold = async function(){
+
+const snap = await get(userRef);
+const data = snap.val();
+
+if(data.goldNick){
+showMsg("❌ Już posiadasz złoty nick");
+return;
+}
+
+if((data.coins || 0) < 1){
+showMsg("❌ Masz za mało monet");
+return;
+}
+
+await update(userRef,{
+coins:(data.coins || 0) - 1,
+goldNick:true,
+color:"gold"
 });
 
-document.getElementById("msg").value="";
+showMsg("👑 Kupiono złoty nick!");
+loadUser();
 };
 
-const chat = document.getElementById("chat");
+window.buyBadge = async function(){
 
-onChildAdded(chatRef,(snap)=>{
+const snap = await get(userRef);
+const data = snap.val();
 
-const data=snap.val();
+if(data.badge === "🤑 Fan Romka"){
+showMsg("❌ Już posiadasz tę odznakę");
+return;
+}
 
-const date=new Date(data.time);
-const formatted=
-date.toLocaleDateString("pl-PL")+" "+
-date.toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"});
+if((data.coins || 0) < 1){
+showMsg("❌ Masz za mało monet");
+return;
+}
 
-const div=document.createElement("div");
-div.classList.add("message");
-
-div.innerHTML=`
-<b>${data.user}</b>
-<span style="font-size:12px;color:#555;">(${formatted})</span>
-<br><br>
-${data.text}
-`;
-
-chat.appendChild(div);
-chat.scrollTop = chat.scrollHeight; // auto-scroll
+await update(userRef,{
+coins:(data.coins || 0) - 1,
+badge:"🤑 Fan Romka"
 });
 
-function applyTheme(){
-const theme=localStorage.getItem("theme");
+showMsg("🤑 Kupiono odznakę Fan Romka!");
+loadUser();
+};
 
-if(theme==="dark"){
-document.body.style.backgroundColor="#111";
-document.body.style.color="#fff";
-}
+function showMsg(text){
+
+const msg = document.getElementById("msg");
+msg.textContent = text;
+
+setTimeout(()=>{
+msg.textContent = "";
+},3000);
 }
 
-applyTheme();
 </script>
 
 </body>
 </html>
+
