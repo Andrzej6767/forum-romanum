@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -7,6 +6,7 @@
 <title>Mercator Romanus</title>
 
 <style>
+
 body{
     margin:0;
     font-family:Georgia,serif;
@@ -53,11 +53,13 @@ header{
 }
 
 #merchant img{
-    width:220px;
+    width:260px;
+    border-radius:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.35);
 }
 
 #merchant h2{
-    margin-top:10px;
+    margin-top:15px;
     font-size:2rem;
 }
 
@@ -65,7 +67,8 @@ header{
     max-width:1100px;
     margin:30px auto;
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    grid-template-columns:
+    repeat(auto-fit,minmax(280px,1fr));
     gap:25px;
     padding:20px;
 }
@@ -131,13 +134,14 @@ button:disabled{
 @media(max-width:700px){
 
     #merchant img{
-        width:160px;
+        width:180px;
     }
 
     #merchant h2{
         font-size:1.5rem;
     }
 }
+
 </style>
 </head>
 
@@ -173,27 +177,7 @@ Witaj podróżniku. Wymień swoje monety na wyjątkowe przedmioty.
 
 <div id="market">
 
-<div class="item">
-
-<div class="itemIcon">
-👑
-</div>
-
-<h3>Złoty nick</h3>
-
-<p>
-Twój nick będzie wyświetlany złotym kolorem w Media Romanum.
-</p>
-
-<div class="price">
-💵 1 moneta
-</div>
-
-<button id="goldBtn" onclick="buyGold()">
-Kup
-</button>
-
-</div>
+<!-- FAN ROMKA -->
 
 <div class="item">
 
@@ -211,7 +195,31 @@ Odznaka 🤑 Fan Romka będzie widoczna obok Twojego nicku.
 💵 1 moneta
 </div>
 
-<button id="badgeBtn" onclick="buyBadge()">
+<button id="fanBtn" onclick="buyFan()">
+Kup
+</button>
+
+</div>
+
+<!-- GLADIATOR -->
+
+<div class="item">
+
+<div class="itemIcon">
+⚔
+</div>
+
+<h3>Gladiator Romka</h3>
+
+<p>
+Specjalna odznaka gladiatora Forum Romanum.
+</p>
+
+<div class="price">
+💵 1 moneta
+</div>
+
+<button id="gladiatorBtn" onclick="buyGladiator()">
 Kup
 </button>
 
@@ -223,120 +231,180 @@ Kup
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
 getDatabase,
 ref,
 get,
 update
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const firebaseConfig={
+const firebaseConfig = {
+
 apiKey:"AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
+
 authDomain:"dupa-a6aa0.firebaseapp.com",
+
 databaseURL:"https://dupa-a6aa0-default-rtdb.firebaseio.com",
+
 projectId:"dupa-a6aa0",
+
 storageBucket:"dupa-a6aa0.firebasestorage.app",
+
 messagingSenderId:"782529996845",
+
 appId:"1:782529996845:web:277ff4fcf6f4db846cf0a4"
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
 
-const user = localStorage.getItem("nickname");
+const user =
+localStorage.getItem("nickname");
 
 if(!user){
+
 window.location.href = "index.html";
 }
 
-const userRef = ref(db,"users/" + user);
+const userRef =
+ref(db,"users/" + user);
 
 async function loadUser(){
 
-const snap = await get(userRef);
-const data = snap.val();
+const snap =
+await get(userRef);
+
+const data =
+snap.val();
 
 if(!data) return;
 
-document.getElementById("coinCount").textContent = data.coins || 0;
+document.getElementById("coinCount")
+.textContent = data.coins || 0;
 
-// złoty nick już kupiony
-if(data.goldNick){
+// FAN ROMKA
+if(data.badges?.fanRomek){
 
-const btn = document.getElementById("goldBtn");
+const btn =
+document.getElementById("fanBtn");
+
 btn.disabled = true;
+
 btn.textContent = "Kupiono";
 }
 
-// badge już kupiony
-if(data.badge === "🤑 Fan Romka"){
+// GLADIATOR
+if(data.badges?.gladiator){
 
-const btn = document.getElementById("badgeBtn");
+const btn =
+document.getElementById("gladiatorBtn");
+
 btn.disabled = true;
+
 btn.textContent = "Kupiono";
 }
 }
 
 loadUser();
 
-window.buyGold = async function(){
+/* FAN ROMKA */
 
-const snap = await get(userRef);
-const data = snap.val();
+window.buyFan = async function(){
 
-if(data.goldNick){
-showMsg("❌ Już posiadasz złoty nick");
+const snap =
+await get(userRef);
+
+const data =
+snap.val();
+
+if(data.badges?.fanRomek){
+
+showMsg("❌ Już posiadasz tę odznakę");
+
 return;
 }
 
 if((data.coins || 0) < 1){
+
 showMsg("❌ Masz za mało monet");
+
 return;
 }
 
+const badges =
+data.badges || {};
+
+badges.fanRomek = true;
+
 await update(userRef,{
+
 coins:(data.coins || 0) - 1,
-goldNick:true,
-color:"gold"
+
+badges:badges
 });
 
-showMsg("👑 Kupiono złoty nick!");
+showMsg("🤑 Kupiono Fan Romka!");
+
 loadUser();
 };
 
-window.buyBadge = async function(){
+/* GLADIATOR */
 
-const snap = await get(userRef);
-const data = snap.val();
+window.buyGladiator = async function(){
 
-if(data.badge === "🤑 Fan Romka"){
+const snap =
+await get(userRef);
+
+const data =
+snap.val();
+
+if(data.badges?.gladiator){
+
 showMsg("❌ Już posiadasz tę odznakę");
+
 return;
 }
 
 if((data.coins || 0) < 1){
+
 showMsg("❌ Masz za mało monet");
+
 return;
 }
 
+const badges =
+data.badges || {};
+
+badges.gladiator = true;
+
 await update(userRef,{
+
 coins:(data.coins || 0) - 1,
-badge:"🤑 Fan Romka"
+
+badges:badges
 });
 
-showMsg("🤑 Kupiono odznakę Fan Romka!");
+showMsg("⚔ Kupiono Gladiator Romka!");
+
 loadUser();
 };
 
 function showMsg(text){
 
-const msg = document.getElementById("msg");
+const msg =
+document.getElementById("msg");
+
 msg.textContent = text;
 
 setTimeout(()=>{
+
 msg.textContent = "";
+
 },3000);
 }
 
@@ -344,4 +412,3 @@ msg.textContent = "";
 
 </body>
 </html>
-
