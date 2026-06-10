@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Intelektus Romanus</title>
+
+<style>
+body{
+    font-family: Georgia, serif;
+    background:#f4e1c1;
+    text-align:center;
+    padding:30px;
+}
+
+button{
+    padding:12px;
+    margin:8px;
+    width:250px;
+    border:none;
+    border-radius:10px;
+    background:#8b5e3c;
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    background:#6f472d;
+}
+
+#box{
+    margin-top:30px;
+}
+
+h1{
+    color:#4b2e1e;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🧠 Intelektus Romanus</h1>
+<p>2 pytania dziennie. +20 / -20 IQ</p>
+
+<div id="box"></div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD5wKZf1d_AE8e...",
+  authDomain: "dupa-a6aa0.firebaseapp.com",
+  databaseURL: "https://dupa-a6aa0-default-rtdb.firebaseio.com",
+  projectId: "dupa-a6aa0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const nickname = localStorage.getItem("nickname");
+
+if(!nickname){
+    window.location.href = "index.html";
+}
+
+/* =========================
+   🧠 PYTANIA (30 SZTUK)
+========================= */
+
+const questions = [
+{ q:"Kto jest najśliniejszym człowiekiem na ziemi?", a:["Romek"] },
+
+{ q:"Ile to 2 + 2?", a:["3","4","5","6"], c:"4" },
+{ q:"Stolica Polski?", a:["Warszawa","Kraków","Gdańsk","Lublin"], c:"Warszawa" },
+{ q:"Ile to 10 * 10?", a:["100","10","110","90"], c:"100" },
+{ q:"Który kolor powstaje z czerwonego i niebieskiego?", a:["Fioletowy","Zielony","Żółty","Pomarańczowy"], c:"Fioletowy" },
+{ q:"Największa planeta?", a:["Ziemia","Mars","Jowisz","Saturn"], c:"Jowisz" },
+{ q:"Ile dni ma rok?", a:["365","360","400","350"], c:"365" },
+{ q:"Które zwierzę szczeka?", a:["Kot","Pies","Koń","Krowa"], c:"Pies" },
+{ q:"Ile to 5 + 7?", a:["10","11","12","13"], c:"12" },
+{ q:"Stolica Włoch?", a:["Rzym","Paryż","Madryt","Berlin"], c:"Rzym" },
+
+{ q:"Który pierwiastek to H?", a:["Hel","Wodór","Tlen","Azot"], c:"Wodór" },
+{ q:"Ile to 9 - 3?", a:["6","5","7","8"], c:"6" },
+{ q:"Najbliższa gwiazda?", a:["Słońce","Mars","Księżyc","Jowisz"], c:"Słońce" },
+{ q:"Ile to 3 * 3?", a:["6","9","12","8"], c:"9" },
+{ q:"Który kontynent jest największy?", a:["Azja","Europa","Afryka","Australia"], c:"Azja" },
+
+{ q:"Ile boków ma kwadrat?", a:["3","4","5","6"], c:"4" },
+{ q:"Który ocean jest największy?", a:["Atlantycki","Spokojny","Indyjski","Arktyczny"], c:"Spokojny" },
+{ q:"Ile to 100 / 10?", a:["5","10","15","20"], c:"10" },
+{ q:"Najmniejsza liczba pierwsza?", a:["1","2","3","5"], c:"2" },
+{ q:"Który język w Rzymie?", a:["Łacina","Grecki","Angielski","Francuski"], c:"Łacina" },
+
+{ q:"Ile to 7 + 8?", a:["14","15","16","17"], c:"15" },
+{ q:"Które zwierzę jest największe?", a:["Słoń","Kot","Pies","Koń"], c:"Słoń" },
+{ q:"Ile to 12 / 3?", a:["2","3","4","5"], c:"4" },
+{ q:"Stolica Niemiec?", a:["Berlin","Monachium","Hamburg","Kolonia"], c:"Berlin" },
+{ q:"Który gaz oddychamy?", a:["Tlen","Azot","Hel","CO2"], c:"Tlen" },
+
+{ q:"Ile to 6 * 6?", a:["30","36","42","40"], c:"36" },
+{ q:"Najwyższa góra?", a:["K2","Everest","Alpy","Tatry"], c:"Everest" },
+{ q:"Ile to 8 + 2?", a:["9","10","11","12"], c:"10" },
+{ q:"Który miesiąc ma 28 dni?", a:["Luty","Marzec","Każdy","Styczeń"], c:"Każdy" },
+{ q:"Ile to 50 - 25?", a:["20","25","30","15"], c:"25" }
+];
+
+/* ========================= */
+
+let nickname = localStorage.getItem("nickname");
+
+async function getUser(){
+    const snap = await get(ref(db, "users/" + nickname));
+    return snap.val();
+}
+
+async function updateUser(data){
+    await update(ref(db, "users/" + nickname), data);
+}
+
+/* reset 2 pytania dziennie */
+function today(){
+    return new Date().toISOString().split("T")[0];
+}
+
+async function canPlay(user){
+
+    if(user.lastQuizDate !== today()){
+        await updateUser({
+            lastQuizDate: today(),
+            quizTodayCount: 0
+        });
+        return true;
+    }
+
+    return (user.quizTodayCount || 0) < 2;
+}
+
+/* losowanie */
+function randomQ(){
+    return questions[Math.floor(Math.random()*questions.length)];
+}
+
+/* główna logika */
+async function play(){
+
+    const user = await getUser();
+
+    if(!await canPlay(user)){
+        document.getElementById("box").innerHTML =
+        "<h2>⛔ Limit 2 pytania na dziś</h2>";
+        return;
+    }
+
+    const q = randomQ();
+
+    const box = document.getElementById("box");
+    box.innerHTML = `<h2>${q.q}</h2>`;
+
+    const answers = q.a;
+
+    answers.forEach(ans => {
+
+        const btn = document.createElement("button");
+        btn.innerText = ans;
+
+        btn.onclick = async () => {
+
+            let iq = user.iq ?? 60;
+
+            let correct = (ans === (q.c || q.a[0]));
+
+            if(correct) iq += 20;
+            else iq -= 20;
+
+            if(iq < 40) iq = 40;
+
+            await updateUser({
+                iq,
+                quizTodayCount: (user.quizTodayCount || 0) + 1
+            });
+
+            box.innerHTML = `
+                <h2>${correct ? "✔ Dobra odpowiedź" : "❌ Zła odpowiedź"}</h2>
+                <p>IQ: ${iq}</p>
+                <button onclick="location.reload()">Dalej</button>
+            `;
+        };
+
+        box.appendChild(btn);
+    });
+}
+
+play();
+
+</script>
+
+</body>
+</html>
