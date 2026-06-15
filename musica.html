@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Musica Roma</title>
+<title>Intelektus Romanus</title>
 
 <style>
 body{
     margin:0;
     font-family:Georgia,serif;
     background:#f4e1c1;
-    text-align:center;
     color:#4b2e1e;
+    text-align:center;
 }
 
 header{
@@ -20,39 +20,32 @@ header{
     border-bottom:5px solid #8b5e3c;
 }
 
-#piano{
-    margin:40px auto;
-    display:flex;
-    justify-content:center;
-}
-
-.key{
-    width:60px;
-    height:200px;
-    border:2px solid #8b5e3c;
-    background:white;
-    margin:2px;
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
-    font-weight:bold;
-    cursor:pointer;
-    user-select:none;
-    border-radius:8px;
-}
-
-.key:active{
+#box{
+    max-width:700px;
+    margin:30px auto;
     background:#e6c89f;
+    padding:20px;
+    border-radius:12px;
+    border:2px solid #8b5e3c;
 }
 
-#back{
-    display:inline-block;
-    margin:15px;
+button{
     padding:10px 15px;
+    margin:8px;
+    border:none;
+    border-radius:8px;
     background:#8b5e3c;
     color:white;
-    text-decoration:none;
-    border-radius:8px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#6f472d;
+}
+
+#info{
+    margin-top:10px;
+    font-weight:bold;
 }
 </style>
 </head>
@@ -60,48 +53,182 @@ header{
 <body>
 
 <header>
-<h1>🎹 Musica Roma</h1>
+<h1>🧠 Intelektus Romanus</h1>
 </header>
 
-<a id="back" href="lorem.html">⬅ Powrót</a>
+<div id="box">
 
-<div id="piano">
-    <div class="key" onclick="play('C')">C</div>
-    <div class="key" onclick="play('D')">D</div>
-    <div class="key" onclick="play('E')">E</div>
-    <div class="key" onclick="play('F')">F</div>
-    <div class="key" onclick="play('G')">G</div>
-    <div class="key" onclick="play('A')">A</div>
-    <div class="key" onclick="play('B')">B</div>
-    <div class="key" onclick="play('C2')">C</div>
+<h2 id="question">Kliknij Start</h2>
+
+<div id="answers"></div>
+
+<button onclick="start()">Start</button>
+
+<p id="info"></p>
+
 </div>
 
-<script>
-function play(note){
+<script type="module">
 
-    const audio = new Audio(`https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments/samples/piano/${note}.mp3`);
-    audio.play();
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const app = initializeApp({
+apiKey:"AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
+authDomain:"dupa-a6aa0.firebaseapp.com",
+databaseURL:"https://dupa-a6aa0-default-rtdb.firebaseio.com",
+projectId:"dupa-a6aa0",
+storageBucket:"dupa-a6aa0.firebasestorage.app",
+messagingSenderId:"782529996845",
+appId:"1:782529996845:web:277ff4fcf6f4db846cf0a4"
+});
+
+const db = getDatabase(app);
+const user = localStorage.getItem("nickname");
+const userRef = ref(db,"users/"+user);
+
+/* 🧠 PYTANIA (40 szt.) */
+const questions = [
+{
+q:"Kto jest najsilniejszym człowiekiem na ziemi?",
+a:["Arnold","Pudzianowski","Romek","Hafthor"],
+c:2
+},
+{
+q:"2 + 2 = ?",
+a:["3","4","5","6"],
+c:1
+},
+{
+q:"Stolica Polski?",
+a:["Kraków","Warszawa","Gdańsk","Wrocław"],
+c:1
+},
+{
+q:"Ile nóg ma pająk?",
+a:["6","8","10","12"],
+c:1
+},
+{
+q:"Która planeta jest 3 od Słońca?",
+a:["Mars","Ziemia","Wenus","Jowisz"],
+c:1
+},
+{
+q:"Największy ocean?",
+a:["Atlantycki","Spokojny","Indyjski","Arktyczny"],
+c:1
+},
+{
+q:"Ile to 10/2?",
+a:["2","3","5","6"],
+c:2
+},
+{
+q:"Który jest alfabet?",
+a:["ABC","123","XYZ","987"],
+c:0
+},
+{
+q:"Największy ssak?",
+a:["Słoń","Płetwal błękitny","Rekin","Niedźwiedź"],
+c:1
+},
+{
+q:"Kolor nieba?",
+a:["Zielony","Niebieski","Czerwony","Czarny"],
+c:1
+}
+];
+
+/* (reszta automatycznie losowa - powielamy) */
+while(questions.length < 40){
+questions.push(questions[Math.floor(Math.random()*10)]);
 }
 
-/* klawiatura */
-document.addEventListener("keydown",(e)=>{
+let current = null;
 
-const map={
-a:"C",
-s:"D",
-d:"E",
-f:"F",
-g:"G",
-h:"A",
-j:"B",
-k:"C2"
+/* LIMIT 2 DZIENNIE */
+async function canPlay(){
+const snap = await get(userRef);
+const data = snap.val() || {};
+
+const today = new Date().toDateString();
+
+if(data.lastDay !== today){
+await update(userRef,{
+lastDay:today,
+used:0
+});
+return true;
+}
+
+return (data.used || 0) < 2;
+}
+
+window.start = async function(){
+
+if(!(await canPlay())){
+document.getElementById("info").innerText =
+"⏳ Limit 2 pytania dziennie!";
+return;
+}
+
+const snap = await get(userRef);
+const data = snap.val() || {iq:60};
+
+current = questions[Math.floor(Math.random()*questions.length)];
+
+document.getElementById("question").innerText = current.q;
+
+const ansDiv = document.getElementById("answers");
+ansDiv.innerHTML = "";
+
+current.a.forEach((a,i)=>{
+
+const btn = document.createElement("button");
+
+btn.innerText = a;
+
+btn.onclick = () => answer(i);
+
+ansDiv.appendChild(btn);
+});
+
+document.getElementById("info").innerText = "";
+
 };
 
-if(map[e.key]){
-play(map[e.key]);
+window.answer = async function(i){
+
+const snap = await get(userRef);
+const data = snap.val() || {iq:60,coins:0};
+
+let iq = data.iq || 60;
+
+let used = data.used || 0;
+
+if(i === current.c){
+iq += 20;
+document.getElementById("info").innerText = "✔ Dobrze! +20 IQ";
+}else{
+iq -= 20;
+document.getElementById("info").innerText = "❌ Źle! -20 IQ";
 }
 
+if(iq < 40) iq = 40;
+
+await update(userRef,{
+iq:iq,
+used:used+1
 });
+
+document.getElementById("answers").innerHTML = "";
+
+document.getElementById("question").innerText =
+"Kliknij Start";
+};
+
 </script>
 
 </body>
