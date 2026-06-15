@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Musica Roma</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Georgia,serif;
+    background:#f4e1c1;
+    text-align:center;
+    color:#4b2e1e;
+}
+
+header{
+    background:#d4b483;
+    padding:20px;
+    border-bottom:5px solid #8b5e3c;
+}
+
+#piano{
+    margin:40px auto;
+    display:flex;
+    justify-content:center;
+}
+
+.key{
+    width:60px;
+    height:200px;
+    border:2px solid #8b5e3c;
+    background:white;
+    margin:2px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    font-weight:bold;
+    cursor:pointer;
+    user-select:none;
+    border-radius:8px;
+}
+
+.key:active{
+    background:#e6c89f;
+}
+
+#back{
+    display:inline-block;
+    margin:15px;
+    padding:10px 15px;
+    background:#8b5e3c;
+    color:white;
+    text-decoration:none;
+    border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🎹 Musica Roma</h1>
+</header>
+
+<a id="back" href="lorem.html">⬅ Powrót</a>
+
+<div id="piano">
+    <div class="key" onclick="play('C')">C</div>
+    <div class="key" onclick="play('D')">D</div>
+    <div class="key" onclick="play('E')">E</div>
+    <div class="key" onclick="play('F')">F</div>
+    <div class="key" onclick="play('G')">G</div>
+    <div class="key" onclick="play('A')">A</div>
+    <div class="key" onclick="play('B')">B</div>
+    <div class="key" onclick="play('C2')">C</div>
+</div>
+
+<script>
+function play(note){
+
+    const audio = new Audio(`https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments/samples/piano/${note}.mp3`);
+    audio.play();
+}
+
+/* klawiatura */
+document.addEventListener("keydown",(e)=>{
+
+const map={
+a:"C",
+s:"D",
+d:"E",
+f:"F",
+g:"G",
+h:"A",
+j:"B",
+k:"C2"
+};
+
+if(map[e.key]){
+play(map[e.key]);
+}
+
+});
+</script>
+
+</body>
+</html>
