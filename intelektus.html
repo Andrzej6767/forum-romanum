@@ -2,64 +2,70 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Intelektus Romanus</title>
 
 <style>
 body{
-    font-family: Georgia, serif;
+    margin:0;
+    font-family:Georgia,serif;
     background:#f4e1c1;
+    color:#4b2e1e;
     text-align:center;
-    padding:20px;
 }
 
-#hud{
-    position:fixed;
-    top:10px;
-    left:10px;
-    background:#8b5e3c;
-    color:white;
-    padding:10px;
-    border-radius:10px;
+header{
+    background:#d4b483;
+    padding:20px;
+    border-bottom:5px solid #8b5e3c;
+}
+
+#box{
+    max-width:700px;
+    margin:30px auto;
+    background:#e6c89f;
+    padding:20px;
+    border-radius:12px;
+    border:2px solid #8b5e3c;
 }
 
 button{
-    padding:12px;
+    padding:10px 15px;
     margin:8px;
-    width:250px;
     border:none;
-    border-radius:10px;
+    border-radius:8px;
     background:#8b5e3c;
     color:white;
     cursor:pointer;
 }
 
-button:hover{ background:#6f472d; }
-
-#box{
-    margin-top:80px;
+button:hover{
+    background:#6f472d;
 }
 
-#exit{
-    position:fixed;
-    top:10px;
-    right:10px;
-    background:red;
+#info{
+    margin-top:10px;
+    font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<div id="hud">
-🧠 IQ: <span id="iq">--</span>
-</div>
-
-<button id="exit" onclick="location.href='Login.html'">⬅ Wyjście</button>
-
-<h1>Intelektus Romanus</h1>
+<header>
+<h1>🧠 Intelektus Romanus</h1>
+</header>
 
 <div id="box">
-Ładowanie...
+
+<h2 id="question">Kliknij Start</h2>
+
+<div id="answers"></div>
+
+<button onclick="start()">Start</button>
+
+<p id="info"></p>
+
 </div>
 
 <script type="module">
@@ -71,91 +77,157 @@ const app = initializeApp({
 apiKey:"AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
 authDomain:"dupa-a6aa0.firebaseapp.com",
 databaseURL:"https://dupa-a6aa0-default-rtdb.firebaseio.com",
-projectId:"dupa-a6aa0"
+projectId:"dupa-a6aa0",
+storageBucket:"dupa-a6aa0.firebasestorage.app",
+messagingSenderId:"782529996845",
+appId:"1:782529996845:web:277ff4fcf6f4db846cf0a4"
 });
 
 const db = getDatabase(app);
+const user = localStorage.getItem("nickname");
+const userRef = ref(db,"users/"+user);
 
-const nickname = localStorage.getItem("nickname");
-
-const box = document.getElementById("box");
-
-if(!nickname){
-    box.innerHTML = "Brak użytkownika";
-}
-
-/* ===== PYTANIA ===== */
-
+/* 🧠 PYTANIA (40 szt.) */
 const questions = [
-{q:"Kto jest najśliniejszym człowiekiem na ziemi?", a:["Romek"]},
-{q:"Ile to 2+2?", a:["3","4","5","6"], c:"4"},
-{q:"Stolica Polski?", a:["Warszawa","Kraków","Gdańsk"], c:"Warszawa"},
-{q:"Ile to 10*10?", a:["100","10","110"], c:"100"},
-{q:"Jaki kolor powstaje z czerwonego i niebieskiego?", a:["Fioletowy","Zielony"], c:"Fioletowy"}
+{
+q:"Kto jest najsilniejszym człowiekiem na ziemi?",
+a:["Arnold","Pudzianowski","Romek","Hafthor"],
+c:2
+},
+{
+q:"2 + 2 = ?",
+a:["3","4","5","6"],
+c:1
+},
+{
+q:"Stolica Polski?",
+a:["Kraków","Warszawa","Gdańsk","Wrocław"],
+c:1
+},
+{
+q:"Ile nóg ma pająk?",
+a:["6","8","10","12"],
+c:1
+},
+{
+q:"Która planeta jest 3 od Słońca?",
+a:["Mars","Ziemia","Wenus","Jowisz"],
+c:1
+},
+{
+q:"Największy ocean?",
+a:["Atlantycki","Spokojny","Indyjski","Arktyczny"],
+c:1
+},
+{
+q:"Ile to 10/2?",
+a:["2","3","5","6"],
+c:2
+},
+{
+q:"Który jest alfabet?",
+a:["ABC","123","XYZ","987"],
+c:0
+},
+{
+q:"Największy ssak?",
+a:["Słoń","Płetwal błękitny","Rekin","Niedźwiedź"],
+c:1
+},
+{
+q:"Kolor nieba?",
+a:["Zielony","Niebieski","Czerwony","Czarny"],
+c:1
+}
 ];
 
-/* ===== SAFE USER LOAD ===== */
-
-async function getUser(){
-
-    try{
-        const snap = await get(ref(db,"users/"+nickname));
-        return snap.val() || {iq:60};
-    } catch(e){
-        return {iq:60};
-    }
+/* (reszta automatycznie losowa - powielamy) */
+while(questions.length < 40){
+questions.push(questions[Math.floor(Math.random()*10)]);
 }
 
-/* ===== LOAD UI ===== */
+let current = null;
 
-async function start(){
+/* LIMIT 2 DZIENNIE */
+async function canPlay(){
+const snap = await get(userRef);
+const data = snap.val() || {};
 
-    const user = await getUser();
+const today = new Date().toDateString();
 
-    document.getElementById("iq").innerText = user.iq ?? 60;
-
-    const q = questions[Math.floor(Math.random()*questions.length)];
-
-    box.innerHTML = `<h2>${q.q}</h2>`;
-
-    const answers = q.a;
-
-    answers.forEach(ans=>{
-
-        const btn = document.createElement("button");
-        btn.innerText = ans;
-
-        btn.onclick = async () => {
-
-            let iq = user.iq ?? 60;
-
-            const correct = (ans === (q.c || q.a[0]));
-
-            if(correct) iq += 20;
-            else iq -= 20;
-
-            if(iq < 40) iq = 40;
-
-            try{
-                await update(ref(db,"users/"+nickname),{iq});
-            }catch(e){
-                console.log("update error",e);
-            }
-
-            box.innerHTML = `
-                <h2>${correct ? "✔ dobrze" : "❌ źle"}</h2>
-                <p>IQ: ${iq}</p>
-                <button onclick="location.reload()">Dalej</button>
-            `;
-
-            document.getElementById("iq").innerText = iq;
-        };
-
-        box.appendChild(btn);
-    });
+if(data.lastDay !== today){
+await update(userRef,{
+lastDay:today,
+used:0
+});
+return true;
 }
 
-start();
+return (data.used || 0) < 2;
+}
+
+window.start = async function(){
+
+if(!(await canPlay())){
+document.getElementById("info").innerText =
+"⏳ Limit 2 pytania dziennie!";
+return;
+}
+
+const snap = await get(userRef);
+const data = snap.val() || {iq:60};
+
+current = questions[Math.floor(Math.random()*questions.length)];
+
+document.getElementById("question").innerText = current.q;
+
+const ansDiv = document.getElementById("answers");
+ansDiv.innerHTML = "";
+
+current.a.forEach((a,i)=>{
+
+const btn = document.createElement("button");
+
+btn.innerText = a;
+
+btn.onclick = () => answer(i);
+
+ansDiv.appendChild(btn);
+});
+
+document.getElementById("info").innerText = "";
+
+};
+
+window.answer = async function(i){
+
+const snap = await get(userRef);
+const data = snap.val() || {iq:60,coins:0};
+
+let iq = data.iq || 60;
+
+let used = data.used || 0;
+
+if(i === current.c){
+iq += 20;
+document.getElementById("info").innerText = "✔ Dobrze! +20 IQ";
+}else{
+iq -= 20;
+document.getElementById("info").innerText = "❌ Źle! -20 IQ";
+}
+
+if(iq < 40) iq = 40;
+
+await update(userRef,{
+iq:iq,
+used:used+1
+});
+
+document.getElementById("answers").innerHTML = "";
+
+document.getElementById("question").innerText =
+"Kliknij Start";
+};
 
 </script>
 
