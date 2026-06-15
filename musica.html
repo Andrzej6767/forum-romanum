@@ -24,7 +24,7 @@ header{
     margin:40px auto;
     display:flex;
     justify-content:center;
-    flex-wrap:wrap;
+    position:relative;
 }
 
 .key{
@@ -40,12 +40,22 @@ header{
     font-weight:bold;
     cursor:pointer;
     user-select:none;
-    transition:0.1s;
+    position:relative;
+    z-index:1;
 }
 
 .key:active{
     background:#e6c89f;
-    transform:scale(0.98);
+}
+
+.key.black{
+    background:#222;
+    color:white;
+    width:40px;
+    height:140px;
+    margin-left:-20px;
+    margin-right:-20px;
+    z-index:2;
 }
 
 #back{
@@ -69,27 +79,43 @@ header{
 <a id="back" href="lorem.html">⬅ Powrót</a>
 
 <div id="piano">
-    <div class="key" onclick="play('C4')">C</div>
-    <div class="key" onclick="play('D4')">D</div>
-    <div class="key" onclick="play('E4')">E</div>
-    <div class="key" onclick="play('F4')">F</div>
-    <div class="key" onclick="play('G4')">G</div>
-    <div class="key" onclick="play('A4')">A</div>
-    <div class="key" onclick="play('B4')">B</div>
-    <div class="key" onclick="play('C5')">C</div>
+
+<!-- BIAŁE KLAWISZE -->
+<div class="key" onclick="play('C4')">C</div>
+<div class="key" onclick="play('D4')">D</div>
+<div class="key" onclick="play('E4')">E</div>
+<div class="key" onclick="play('F4')">F</div>
+<div class="key" onclick="play('G4')">G</div>
+<div class="key" onclick="play('A4')">A</div>
+<div class="key" onclick="play('B4')">B</div>
+<div class="key" onclick="play('C5')">C</div>
+
+<!-- CZARNE KLAWISZE -->
+<div class="key black" onclick="play('Cs4')">C#</div>
+<div class="key black" onclick="play('Ds4')">D#</div>
+
+<div class="key black" onclick="play('Fs4')">F#</div>
+<div class="key black" onclick="play('Gs4')">G#</div>
+<div class="key black" onclick="play('As4')">A#</div>
+
 </div>
 
 <script>
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-/* prawdziwe częstotliwości pianina */
+/* 🎵 częstotliwości */
 const freq = {
     C4: 261.63,
+    Cs4: 277.18,
     D4: 293.66,
+    Ds4: 311.13,
     E4: 329.63,
     F4: 349.23,
+    Fs4: 369.99,
     G4: 392.00,
+    Gs4: 415.30,
     A4: 440.00,
+    As4: 466.16,
     B4: 493.88,
     C5: 523.25
 };
@@ -99,7 +125,7 @@ function play(note){
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    osc.type = "sine"; // możesz zmienić na "triangle" dla miększego brzmienia
+    osc.type = "sine";
     osc.frequency.value = freq[note];
 
     gain.gain.value = 0.2;
@@ -116,11 +142,16 @@ document.addEventListener("keydown",(e)=>{
 
 const map = {
 a:"C4",
+w:"Cs4",
 s:"D4",
+e:"Ds4",
 d:"E4",
 f:"F4",
+t:"Fs4",
 g:"G4",
+y:"Gs4",
 h:"A4",
+u:"As4",
 j:"B4",
 k:"C5"
 };
