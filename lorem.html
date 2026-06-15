@@ -49,18 +49,17 @@ button{
     cursor:pointer;
 }
 
-button:hover{
-    background:#6f472d;
-}
-
 img{
     width:100%;
     margin-top:10px;
     border-radius:10px;
 }
 
-.likeBtn{
-    margin-top:15px;
+#block{
+    text-align:center;
+    font-size:22px;
+    margin-top:50px;
+    font-weight:bold;
 }
 </style>
 </head>
@@ -71,40 +70,18 @@ img{
 <h1>📜 Lorem Mentis Romani</h1>
 </header>
 
-<a href="Login.html" style="
-display:inline-block;
-margin:10px;
-padding:10px 15px;
-background:#8b5e3c;
-color:white;
-text-decoration:none;
-border-radius:8px;
-">
+<a href="Login.html" style="display:inline-block;margin:10px;padding:10px 15px;background:#8b5e3c;color:white;text-decoration:none;border-radius:8px;">
 ⬅ Powrót
 </a>
 
-<div id="blockScreen" style="
-display:none;
-text-align:center;
-padding:50px;
-font-size:22px;
-color:#8b0000;
-font-weight:bold;
-">
-🚫 Dostęp zablokowany<br>
-Wymagane IQ: 140+
-</div>
+<div id="block">Sprawdzanie IQ...</div>
 
-<div id="app" style="display:none;">
+<div id="content" style="display:none;">
 
 <div class="post">
-
 <textarea id="text" placeholder="Napisz coś..."></textarea>
-
 <input type="file" id="file">
-
-<button onclick="post()">📤 Dodaj post</button>
-
+<button onclick="post()">Dodaj post</button>
 </div>
 
 <div id="posts"></div>
@@ -114,14 +91,7 @@ Wymagane IQ: 140+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-getDatabase,
-ref,
-push,
-onChildAdded,
-get,
-update
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, get, push, onChildAdded, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const app = initializeApp({
 apiKey:"AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
@@ -137,160 +107,136 @@ const db = getDatabase(app);
 const user = localStorage.getItem("nickname");
 
 if(!user){
-    window.location.href = "index.html";
+window.location.href="index.html";
 }
 
-const postsRef = ref(db,"posts");
+const userRef = ref(db,"users/"+user);
 
-/* =========================
-   🧠 IQ GATE (NOWE)
-========================= */
-
+/* 🔒 BLOKADA IQ */
 async function checkIQ(){
 
-    const snap = await get(ref(db,"users/" + user));
-    const data = snap.val();
+const snap = await get(userRef);
+const data = snap.val();
 
-    const iq = data?.iq ?? 60;
+const iq = data?.iq || 60;
 
-    if(iq < 140){
-        document.getElementById("blockScreen").style.display = "block";
-        document.getElementById("app").style.display = "none";
-    } else {
-        document.getElementById("app").style.display = "block";
-    }
+if(iq < 140){
+
+document.getElementById("block").innerText =
+"❌ Wymagane 140 IQ";
+
+return;
+}
+
+document.getElementById("block").style.display="none";
+document.getElementById("content").style.display="block";
+
+loadPosts();
 }
 
 checkIQ();
 
-/* =========================
-   CLOUDINARY
-========================= */
+/* CLOUDINARY */
+const CLOUD_NAME="dqoqromys";
+const UPLOAD_PRESET="forum_upload";
 
-const CLOUD_NAME = "dqoqromys";
-const UPLOAD_PRESET = "forum_upload";
+async function upload(file){
 
-async function uploadToCloudinary(file){
+const fd = new FormData();
+fd.append("file",file);
+fd.append("upload_preset",UPLOAD_PRESET);
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", UPLOAD_PRESET);
+const res = await fetch(
+`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+{method:"POST",body:fd}
+);
 
-    const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-        { method:"POST", body:formData }
-    );
+const data = await res.json();
+return data.secure_url;
 
-    const data = await res.json();
-    return data.secure_url;
 }
 
-/* =========================
-   POST
-========================= */
-
+/* POST */
 window.post = async function(){
 
-    const text = document.getElementById("text").value;
-    const file = document.getElementById("file").files[0];
+const text = document.getElementById("text").value;
+const file = document.getElementById("file").files[0];
 
-    if(!text.trim() && !file) return;
+if(!text.trim() && !file) return;
 
-    let imageUrl = "";
+let img="";
 
-    if(file){
-        imageUrl = await uploadToCloudinary(file);
-    }
+if(file){
+img = await upload(file);
+}
 
-    push(postsRef,{
-        user,
-        text,
-        img:imageUrl,
-        time:Date.now(),
-        likes:{}
-    });
-
-    document.getElementById("text").value="";
-    document.getElementById("file").value="";
-};
-
-/* =========================
-   LOAD POSTS
-========================= */
-
-onChildAdded(postsRef, async (snap)=>{
-
-    const id = snap.key;
-    const d = snap.val();
-
-    const userSnap = await get(ref(db,"users/" + d.user));
-    const userData = userSnap.val() || {};
-
-    const color = userData.color || "#4b2e1e";
-
-    let badge = "";
-
-    if(userData.badges?.fanRomek) badge += "🤑 ";
-    if(userData.badges?.gladiator) badge += "⚔ ";
-
-    const date = new Date(d.time);
-
-    const formatted =
-        date.toLocaleDateString("pl-PL") + " " +
-        date.toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"});
-
-    const likesCount = Object.keys(d.likes || {}).length;
-
-    const div = document.createElement("div");
-    div.classList.add("post");
-
-    div.innerHTML = `
-        <b style="color:${color};font-size:18px;">
-            ${badge} ${d.user}
-        </b>
-
-        <span style="font-size:12px;color:#666;margin-left:8px;">
-            (${formatted})
-        </span>
-
-        <br><br>
-
-        ${d.text || ""}
-
-        ${d.img ? `<img src="${d.img}">` : ""}
-
-        <br><br>
-
-        <button class="likeBtn" onclick="like('${id}')">
-            👍 ${likesCount}
-        </button>
-    `;
-
-    document.getElementById("posts").prepend(div);
+push(ref(db,"lorem_posts"),{
+user,
+text,
+img,
+time:Date.now(),
+likes:{}
 });
 
-/* =========================
-   LIKE
-========================= */
+document.getElementById("text").value="";
+document.getElementById("file").value="";
+};
 
+/* LOAD */
+function loadPosts(){
+
+onChildAdded(ref(db,"lorem_posts"), async (snap)=>{
+
+const id = snap.key;
+const d = snap.val();
+
+const uSnap = await get(ref(db,"users/"+d.user));
+const u = uSnap.val() || {};
+
+const color = u.color || "#4b2e1e";
+
+const date = new Date(d.time).toLocaleString("pl-PL");
+
+const likes = Object.keys(d.likes||{}).length;
+
+const div = document.createElement("div");
+div.classList.add("post");
+
+div.innerHTML = `
+<b style="color:${color}">${d.user}</b>
+<span style="font-size:12px;color:#666;">(${date})</span>
+<br><br>
+${d.text || ""}
+${d.img ? `<img src="${d.img}">` : ""}
+<br><br>
+<button onclick="like('${id}')">👍 ${likes}</button>
+`;
+
+document.getElementById("posts").prepend(div);
+
+});
+}
+
+/* LIKE */
 window.like = async function(id){
 
-    const postRef = ref(db,"posts/" + id);
-    const snap = await get(postRef);
-    const data = snap.val();
+const postRef = ref(db,"lorem_posts/"+id);
+const snap = await get(postRef);
+const d = snap.val();
 
-    if(!data.likes) data.likes = {};
+if(!d.likes) d.likes={};
 
-    if(data.likes[user]){
-        alert("Już polubiłeś ten post!");
-        return;
-    }
+if(d.likes[user]){
+alert("Już polubiłeś!");
+return;
+}
 
-    data.likes[user] = true;
+d.likes[user]=true;
 
-    await update(postRef,{ likes:data.likes });
+await update(postRef,{likes:d.likes});
 
-    location.reload();
+location.reload();
+
 };
 
 </script>
