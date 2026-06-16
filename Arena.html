@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Arena Romanum</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Georgia,serif;
+    background:#f4e1c1;
+    text-align:center;
+}
+
+header{
+    background:#d4b483;
+    padding:15px;
+    border-bottom:5px solid #8b5e3c;
+}
+
+#arenaBox{
+    max-width:800px;
+    margin:20px auto;
+    background:#e6c89f;
+    padding:20px;
+    border-radius:12px;
+}
+
+button{
+    padding:12px;
+    margin:10px;
+    background:#8b5e3c;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+#fightArea{
+    display:none;
+}
+
+#fighter{
+    width:250px;
+    border-radius:10px;
+    margin:10px;
+}
+
+#hitBtn{
+    font-size:20px;
+    padding:20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>⚔ Arena Romanum</h1>
+</header>
+
+<a href="Login.html">⬅ Powrót</a>
+
+<div id="arenaBox">
+
+<h2>Ranking: <span id="rank">100</span></h2>
+
+<button onclick="joinQueue()">⚔ Dołącz do walki</button>
+
+<p id="status">Czekanie na graczy...</p>
+
+<div id="fightArea">
+    <h2>⚔ WALKA!</h2>
+
+    <img id="fighter" src="">
+
+    <h3>Twój klik: <span id="clicks">0</span></h3>
+
+    <button id="hitBtn" onclick="hit()">ATAK ⚔</button>
+
+    <p id="timer">15</p>
+</div>
+
+</div>
+
+<audio id="music" loop>
+<source src="battle.mp3" type="audio/mpeg">
+</audio>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set, update, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const app = initializeApp({
+apiKey:"AIzaSyD5wKZf1d_AE8j4CAmkLwXouFzU8BjVQTg",
+authDomain:"dupa-a6aa0.firebaseapp.com",
+databaseURL:"https://dupa-a6aa0-default-rtdb.firebaseio.com",
+projectId:"dupa-a6aa0",
+storageBucket:"dupa-a6aa0.firebasestorage.app",
+messagingSenderId:"782529996845",
+appId:"1:782529996845:web:277ff4fcf6f4db846cf0a4"
+});
+
+const db = getDatabase(app);
+
+const user = localStorage.getItem("nickname");
+const userRef = ref(db,"users/"+user);
+const queueRef = ref(db,"arenaQueue");
+
+let clicks = 0;
+let enemy = null;
+let fighting = false;
+
+const fighters = [
+"glad1.jpg",
+"glad2.jpg",
+"glad3.jpg",
+"glad4.jpg"
+];
+
+window.joinQueue = async function(){
+
+    push(queueRef,{
+        user:user,
+        time:Date.now()
+    });
+
+    document.getElementById("status").innerText =
+    "Dołączono do kolejki...";
+
+    onValue(queueRef, async (snap)=>{
+
+        const data = snap.val();
+        if(!data || fighting) return;
+
+        const keys = Object.keys(data);
+
+        if(keys.length >= 2){
+
+            const p1 = data[keys[0]].user;
+            const p2 = data[keys[1]].user;
+
+            if(p1 === user || p2 === user){
+
+                fighting = true;
+
+                await startFight(p1,p2);
+
+                remove(queueRef);
+            }
+        }
+    });
+};
+
+async function startFight(p1,p2){
+
+    document.getElementById("fightArea").style.display="block";
+    document.getElementById("music").play();
+
+    document.getElementById("fighter").src =
+    fighters[Math.floor(Math.random()*fighters.length)];
+
+    clicks = 0;
+    document.getElementById("clicks").innerText=0;
+
+    let time = 15;
+
+    let interval = setInterval(()=>{
+
+        time--;
+        document.getElementById("timer").innerText=time;
+
+        if(time<=0){
+            clearInterval(interval);
+            endFight(p1,p2);
+        }
+
+    },1000);
+}
+
+window.hit = function(){
+    clicks++;
+    document.getElementById("clicks").innerText = clicks;
+};
+
+async function endFight(p1,p2){
+
+    const snap1 = await get(ref(db,"users/"+p1));
+    const snap2 = await get(ref(db,"users/"+p2));
+
+    const u1 = snap1.val();
+    const u2 = snap2.val();
+
+    let winner, loser;
+
+    if(Math.random() < 0.5){
+        winner = p1;
+        loser = p2;
+    } else {
+        winner = p2;
+        loser = p1;
+    }
+
+    if(user === winner){
+        alert("🏆 WYGRANA +10");
+    }
+    if(user === loser){
+        alert("❌ PRZEGRANA -10");
+    }
+
+    await update(ref(db,"users/"+winner),{
+        ranking:(u1.ranking||100)+10
+    });
+
+    await update(ref(db,"users/"+loser),{
+        ranking:Math.max(0,(u2.ranking||100)-10)
+    });
+}
+</script>
+
+</body>
+  </html>
